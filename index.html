@@ -1,0 +1,51 @@
+
+<html>
+<head>
+  <title>Noah's Game Page</title>
+  <style>
+    body {
+      font-family: monospace;
+      background: #032908;
+      padding: 20px;
+      color: #00ff00; /* neon green text for terminal feel */
+    }
+
+    #game-box {
+      white-space: pre-line;
+      background: #000000;
+      color: #00ff00;
+      padding: 20px;
+      border: 1px solid #ccc;
+      min-height: 300px;
+    }
+
+    #stats-box {
+      background: #222222;
+      color: #00ff00;
+      padding: 20px;
+      border: 1px solid #ccc;
+      margin-top: 20px;
+      min-height: 150px;
+    }
+
+    input, button {
+      font-family: monospace;
+      padding: 8px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+    <div id="game-box"></div> <!-- This is the KEY fix -->
+    <div id="stats-box"></div> <!-- Stats box where user stats will appear -->
+    <br>
+    <input type="text" id="input-box" placeholder="Type your response..." />
+    <br>
+    <button onclick="nextStep()">Submit</button>
+
+    <script src="User.js"></script> <!-- Your JS file -->
+    <script src="NPC.js"></script> <!-- Your JS file -->
+    <script src="Boss.js"></script> <!-- Your JS file -->
+    <script src="Program.js"></script> <!-- Go last for load order -->
+</body>
+</html>
