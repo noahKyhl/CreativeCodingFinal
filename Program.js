@@ -3,6 +3,9 @@ let Shrek;
 let npcWins = 10;
 let npcCombatStep = 0;
 let currentEnemy;
+let bossStep = 0;
+let evilBoss;
+let bossChoice = 0;
 
 const actualName = "Shrek";
 
@@ -43,7 +46,7 @@ the satchel at your side. You open it. Onions. So many onions. You don’t know 
 (hit enter)`;
 
   writeToGameBox(introText, true);
-};
+}
 
 function nextStep() {
   const inputBox = document.getElementById("input-box");
@@ -171,7 +174,7 @@ function nextStep() {
             Cage()
             break;
             case 5:
-            writeToGameBox("\n\nYou have abandoned your quest. Depressing... ");
+            gameOver("You have abandoned your quest. Nicholas Cage weeps.");
             return;
         }
         
@@ -226,6 +229,13 @@ function Stats() {
    `;
  }
 
+function gameOver(reason = "Your journey ends here.") {
+  writeToGameBox(`\n\n================ GAME OVER ================\n${reason}\n===========================================`, true);
+  step = -1; // Set step to an invalid value to prevent further input
+  document.getElementById("input-box").disabled = true;
+}
+
+
 //image of Nick Cage displaying?
 function Cage() {
     writeToGameBox(`
@@ -235,100 +245,131 @@ function Cage() {
   `);
     SaveGame(Shrek);
   }
-  
-let evilBoss;
-let bossStep = 0;
-let bossChoice = 0;
-let outcomeText = `\n${evilBoss.name} used ${evilBoss.pow}!`;
 
 function BossB() {
-    evilBoss = new Boss();
-    bossStep = 0;
-    writeRed(`\n==============================================================================================\nYou have spotted the Boss... oh ho, ha ha...\n\n${evilBoss.name} blocks your path to Nick Cage.\nPrepare for battle!\n\nPress Submit to continue.`);
-    updateEnemyStats();
-    step = 200; // ← tell nextStep you're now in Boss Combat Mode!
-  }
+  evilBoss = new Boss(); // initialize the boss
+  bossStep = 0;
+  step = 200; // boss combat mode
+  writeRed(`\n\nYou have spotted the Boss... oh ho, ha ha...`);
+  writeToGameBox(`\n${evilBoss.name} blocks your path to Nick Cage.\nPrepare for battle!`);
+  setTimeout(showBossMenu, 300); // slight delay for smoothness
+}
 
-  function bossInputHandler(input) {
-    input = input.trim();
+function showBossMenu() {
+  Stats();
+  writeRed(`\nEnemy Stats: ${evilBoss.name} | Health: ${evilBoss.health}\n`);
+  writeToGameBox(
+    `Choose your attack:\n` +
+    `1. Unlayer the Ogre\n` +
+    `2. Do the roar\n` +
+    `3. Be a swampy boy`
+  );
+  bossStep = 1;
+}
 
+function bossInputHandler(input) {
+    // CASE 0: show the menu and advance to waiting for the player's selection
     if (bossStep === 0) {
-        writeRed(`\nEnemy Stats: ${evilBoss.name} | Health: ${evilBoss.health}\n`);
-        writeToGameBox(
-            `Choose your attack:\n` +
-            `1. Unlayer the Ogre\n` +
-            `2. Do the roar\n` +
-            `3. Be a swampy boy`
-          );
-        bossStep = 1;
-        return; // Add return here to exit the function and wait for input
-    } 
+      Stats();
 
+      // red stats line:
+      writeRed(`\nEnemy Stats: ${evilBoss.name} | Health: ${evilBoss.health}\n`);
+      writeToGameBox(
+        `Choose your attack:\n` +
+        `1. Unlayer the Ogre\n` +
+        `2. Do the roar\n` +
+        `3. Be a swampy boy`
+      );
+      bossStep = 1;
+      return;
+    }
+    
+    if (Shrek.health <= 0) {
+      gameOver("You were crushed by the boss's power!");
+      return;
+    }
+    if (Shrek.energy <= 0) {
+      gameOver("You're out of energy... the fight slips away.");
+      return;
+    }
+
+    // CASE 1: process the player's selection
     if (bossStep === 1) {
-        const choice = parseInt(input);
-        if (![1, 2, 3].includes(choice)) {
-            writeToGameBox("Please enter a valid attack number (1-3).");
-            return;
-        }
-
-        bossChoice = choice;
-        const npcA = evilBoss.attack(); // Get boss attack
-
-        // Display the boss attack
-        let outcomeText = `\n${evilBoss.name} used ${evilBoss.pow}!`;
-
-        // Check for draw
-        if (choice === npcA) {
-            outcomeText += `\nIt's a draw! ${evilBoss.name}'s attack deflects your move!`;
-            Shrek.energy -= 10; // Player loses energy
-        } else if (
-            (choice === 1 && npcA === 3) ||
-            (choice === 2 && npcA === 1) ||
-            (choice === 3 && npcA === 2)
-        ) {
-            // Player hits the boss
-            let damage = 30 + (30 * Shrek.luck); // Calculate damage
-            evilBoss.takeDamage(damage);
-            Shrek.energy -= 10;
-            Shrek.luck += 0.05;
-            outcomeText += `\nYou hit ${evilBoss.name} for ${damage.toFixed(1)} damage!`;
-        } else {
-            // Boss hits the player
-            Shrek.health -= 20;
-            Shrek.energy -= 10;
-            outcomeText += `\nYou were hit! ${evilBoss.name}'s attack landed.`;
-        }
-
-        // Make sure health and energy don't go below zero
-        if (Shrek.health <= 0) Shrek.health = 0;
-        if (Shrek.energy <= 0) Shrek.energy = 0;
-        
-        updateStats(); // Update player stats
-        updateEnemyStats(); // Update enemy stats
-
-        // Check for game over or victory
-        if (Shrek.health <= 0) {
-            writeToGameBox("\nYou were defeated! Game over.");
-            step = 5; // End the game or return to main menu after defeat
-            return;
-        } else if (evilBoss.health <= 0) {
-            writeToGameBox(`
-    ==============================================================================================
-    You have defeated ${evilBoss.name}! 🏆
-    You approach the mystery man... "Nick Cage?" you ask.
-    Suddenly, Mufasa's voice booms from the heavens: 
-    "There is no Nick Cage, Shrek. There never was."
-    Nick Cage was the friends we made along the way 💫.
-    CONGRATS ${Shrek.actualName}!!! You beat the game. HA, I did know your name all along Shrek. 
-    ==============================================================================================
-    `);
-            bossStep = -1; // End the boss fight
-            step = 5; // After the boss fight, return to the path selection or main menu
-            return;
-        }
-
-        bossStep = 0; // Continue the fight (reset bossStep for next round)
-        writeToGameBox(outcomeText + "\n\nPress Submit to attack again.");
+      const choice = parseInt(input);
+      if (![1, 2, 3].includes(choice)) {
+        writeToGameBox("Invalid move. Choose 1, 2, or 3.");
+        return; // stay in step 1, waiting for a valid move
+      }
+  
+      // boss picks its move
+      const bossMove = Math.floor(Math.random() * 3) + 1;
+  
+      // Rock–Paper–Scissors logic
+      if (choice === bossMove) {
+        writeToGameBox(`\nDraw! ${evilBoss.name}'s "${evilBoss.pow}" deflects your move.`, true);
+        Shrek.energy -= 10;
+      } else if (
+        (choice === 1 && bossMove === 3) ||
+        (choice === 2 && bossMove === 1) ||
+        (choice === 3 && bossMove === 2)
+      ) {
+        const damage = 30 + (30 * Shrek.luck);
+        evilBoss.health -= damage;
+        Shrek.energy -= 10;
+        Shrek.luck += 0.025;
+        writeToGameBox(`\nHit! You land a blow on ${evilBoss.name} for ${evilBoss.toFixed(1)} damage.`, true);
+      } else {
+        writeToGameBox(`\n${evilBoss.name} strikes with "${evilBoss.pow}"! You take 20 damage.`, true);
+        Shrek.health -= 20;
+        Shrek.energy -= 10;
+      }
+  
+      // CHECK FOR END-OF-COMBAT
+      if (evilBoss.health <= 0) {
+        const reward = 10 + (10 * Shrek.luck);
+        Shrek.wallet += reward;
+        npcWins++;
+          writeToGameBox(`
+            ==============================================================================================
+            You have defeated ${evilBoss.name}! 🏆
+            You approach the mystery man... "Nick Cage?" you ask.
+            Suddenly, Mufasa's voice booms from the heavens: 
+            "There is no Nick Cage, Shrek. There never was."
+            Nick Cage was the friends we made along the way 💫.
+            CONGRATS ${Shrek.actualName}!!! You beat the game. HA, I did know your name all along Shrek. 
+            ==============================================================================================
+            `);
+        Stats();
+      // cleanly exit combat:
+        step = 5;
+        bossStep = 0;
+        evilBoss = null;
+        return;
+      }
+      if (Shrek.health <= 0) {
+        writeToGameBox("\nYou have been defeated! Game over.", true);
+        Stats();
+        step = 5;
+        bossStep = 0;
+        evilBoss = null;
+        return;
+      }
+  
+      // STILL FIGHTING → reset to show menu again *immediately*
+      bossStep = 0;
+      writeToGameBox("\nPreparing for the next round...");
+      setTimeout(() => {
+      writeToGameBox("\nYour move again...");
+      Stats();
+      writeRed(`\nEnemy Stats: ${evilBoss.name} | Health: ${evilBoss.health}\n`);
+      writeToGameBox(
+        `Choose your attack:\n` +
+        `1. Unlayer the Ogre\n` +
+        `2. Do the roar\n` +
+        `3. Be a swampy boy`
+      );
+      bossStep = 1;
+    }, 500); // purely visual delay
     }
 }
 
@@ -357,21 +398,105 @@ return new NPC(name, health, pow); // you may want to allow custom power if need
   
 // Encounter logic for NPC
 function handleNPCEncounter() {
-    const npc = createRandomWackyCharacter();
-    currentEnemy = npc;
-    npcCombatStep = 0;
-    step = 100; // enter combat mode
-    writeRed(`\n\nYou encounter ${npc.name}! Prepare for combat.`);
-    startNPCCombat(npc);
+  const npc = createRandomWackyCharacter();
+  currentEnemy = npc;
+  npcCombatStep = 0;
+  step = 100;
+  writeRed(`\n\nYou encounter ${npc.name}! Prepare for combat.`);
+  writeToGameBox(`\n\n[Combat starts with ${npc.name}]\n\n`);
+  handleCombatInput(""); // Immediately prompt the attack choices
 }
+
   
 function handleCombatInput(input) {
-    // CASE 0: show the menu and advance to waiting for the player's selection
-    if (npcCombatStep === 0) {
-      Stats();
+  // CASE 0: show the menu and advance to waiting for the player's selection
+  if (npcCombatStep === 0) {
+    Stats();
 
-      // red stats line:
-  writeRed(`\nEnemy: ${currentEnemy.name} | Health: ${currentEnemy.health}`);
+    // red stats line:
+    writeRed(`\nEnemy: ${currentEnemy.name} | Health: ${currentEnemy.health}`);
+    writeToGameBox(
+      `Choose your attack:\n` +
+      `1. Unlayer the Ogre\n` +
+      `2. Do the roar\n` +
+      `3. Be a swampy boy`
+    );
+    npcCombatStep = 1;
+    return;
+  }
+
+  if (Shrek.health <= 0) {
+    gameOver("You have been defeated in combat!");
+    return;
+  }
+  if (Shrek.energy <= 0) {
+    gameOver("You ran out of energy... so very tired.");
+    return;
+  }
+  
+  // CASE 1: process the player's selection
+  if (npcCombatStep === 1) {
+    const choice = parseInt(input);
+    if (![1, 2, 3].includes(choice)) {
+      writeToGameBox("Invalid move. Choose 1, 2, or 3.");
+      return; // stay in step 1, waiting for a valid move
+    }
+
+    // NPC picks its move
+    const npcMove = Math.floor(Math.random() * 3) + 1;
+
+    // Rock–Paper–Scissors logic
+    if (choice === npcMove) {
+      writeToGameBox(`\nDraw! ${currentEnemy.name}'s ${currentEnemy.pow} deflects your move.`, true);
+      Shrek.energy -= 10;
+    } else if (
+      (choice === 1 && npcMove === 3) ||
+      (choice === 2 && npcMove === 1) ||
+      (choice === 3 && npcMove === 2)
+    ) {
+      const damage = 30 + (30 * Shrek.luck);
+      currentEnemy.health -= damage;
+      Shrek.energy -= 10;
+      Shrek.luck += 0.025;
+      writeToGameBox(`\nHit! You land a blow on ${currentEnemy.name} for ${damage.toFixed(1)} damage.`, true);
+    } else {
+      writeToGameBox(`\n${currentEnemy.name} strikes with ${currentEnemy.pow}! You take 20 damage.`, true);
+      Shrek.health -= 20;
+      Shrek.energy -= 10;
+    }
+
+    // CHECK FOR END-OF-COMBAT
+    if (currentEnemy.health <= 0) {
+      const reward = 10 + (10 * Shrek.luck);
+      Shrek.wallet += reward;
+      npcWins++;
+      writeToGameBox(
+        `\nVictory! You defeated ${currentEnemy.name} and gained $${reward.toFixed(2)}.\n` +
+        `Total NPC wins: ${npcWins}`,
+        true
+      );
+      Stats();
+      // cleanly exit combat:
+      step = 5;
+      npcCombatStep = 0;
+      currentEnemy = null;
+      return;
+    }
+    if (Shrek.health <= 0) {
+      writeToGameBox("\nYou have been defeated! Try again later.", true);
+      Stats();
+      step = 5;
+      npcCombatStep = 0;
+      currentEnemy = null;
+      return;
+    }
+    // Smooth pacing — not recursive
+    npcCombatStep = 0;
+    writeToGameBox("\nPreparing for the next round...");
+    setTimeout(() => {
+      writeToGameBox("\nYour move again...");
+      Stats();
+      writeRed(`\nEnemy: ${currentEnemy.name} | Health: ${currentEnemy.health}`);
       writeToGameBox(
         `Choose your attack:\n` +
         `1. Unlayer the Ogre\n` +
@@ -379,82 +504,8 @@ function handleCombatInput(input) {
         `3. Be a swampy boy`
       );
       npcCombatStep = 1;
-      return;
-    }
-  
-    // CASE 1: process the player's selection
-    if (npcCombatStep === 1) {
-      const choice = parseInt(input);
-      if (![1, 2, 3].includes(choice)) {
-        writeToGameBox("Invalid move. Choose 1, 2, or 3.");
-        return; // stay in step 1, waiting for a valid move
-      }
-  
-      // NPC picks its move
-      const npcMove = Math.floor(Math.random() * 3) + 1;
-  
-      // Rock–Paper–Scissors logic
-      if (choice === npcMove) {
-        writeToGameBox(`\nDraw! ${currentEnemy.name}'s ${currentEnemy.pow} deflects your move.`);
-        Shrek.energy -= 10;
-      } else if (
-        (choice === 1 && npcMove === 3) ||
-        (choice === 2 && npcMove === 1) ||
-        (choice === 3 && npcMove === 2)
-      ) {
-        const damage = 30 + (30 * Shrek.luck);
-        currentEnemy.health -= damage;
-        Shrek.energy -= 10;
-        Shrek.luck += 0.025;
-        writeToGameBox(`\nHit! You land a blow on ${currentEnemy.name} for ${damage.toFixed(1)} damage.`);
-      } else {
-        writeToGameBox(`\n${currentEnemy.name} strikes with ${currentEnemy.pow}! You take 20 damage.`);
-        Shrek.health -= 20;
-        Shrek.energy -= 10;
-      }
-  
-      // CHECK FOR END-OF-COMBAT
-      if (currentEnemy.health <= 0) {
-        const reward = 10 + (10 * Shrek.luck);
-        Shrek.wallet += reward;
-        npcWins++;
-        writeToGameBox(
-          `\nVictory! You defeated ${currentEnemy.name} and gained $${reward.toFixed(2)}.\n` +
-          `Total NPC wins: ${npcWins}`,
-          true
-        );
-        Stats();
-        // cleanly exit combat:
-        step = 5;
-        npcCombatStep = 0;
-        currentEnemy = null;
-        return;
-      }
-      if (Shrek.health <= 0) {
-        writeToGameBox("\nYou have been defeated! Try again later.", true);
-        Stats();
-        step = 5;
-        npcCombatStep = 0;
-        currentEnemy = null;
-        return;
-      }
-  
-      // STILL FIGHTING → reset to show menu again *immediately*
-      npcCombatStep = 0;
-      // recursive call to display the next round's menu **right away**
-      handleCombatInput("");
-    }
+    }, 500);
   }
-  
-
-  
-// NPC combat function
-function startNPCCombat(npc) {
-    currentEnemy = npc;
-    npcCombatStep = 0;
-    step = 100; // you're in NPC combat
-    writeToGameBox(`\n\n[Combat starts with ${npc.name}]\n\n`);
-    handleCombatInput(""); // prompt the first attack
 }
 
 function writeRed(text) {

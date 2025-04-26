@@ -47,5 +47,14 @@
     <script src="NPC.js"></script> <!-- Your JS file -->
     <script src="Boss.js"></script> <!-- Your JS file -->
     <script src="Program.js"></script> <!-- Go last for load order -->
+    <script>
+    // Make "Enter" key trigger the Submit button click
+    document.getElementById("input-box").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault(); // Prevent default form behavior just in case
+        document.querySelector("button").click(); // Simulate a button click
+      }
+    });
+  </script>
 </body>
 </html>

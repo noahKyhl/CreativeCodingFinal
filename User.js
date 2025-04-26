@@ -7,13 +7,8 @@ class User {
         this.luck = luck;
         this.energy = energy;
     }
-  
-    // Method to take damage
-    takeDamage(damage) {
-        this.health -= damage;
-    }
-  
-    // Optional: A method to serialize the object to JSON (you can use this for saving purposes)
+
+    // to serialize the object to JSON (for saving purposes)
     toJSON() {
         return JSON.stringify({
             name: this.name,
