@@ -1,7 +1,8 @@
 let step = 0;
 let Shrek;
-let npcWins = 0;
+let npcWins = 10;
 let npcCombatStep = 0;
+let currentEnemy;
 
 const actualName = "Shrek";
 
@@ -48,8 +49,12 @@ function nextStep() {
   const inputBox = document.getElementById("input-box");
   const input = inputBox.value.trim();
   inputBox.value = "";
-    if (step === 100) {
+    if (step === 100) { // NPC combat
     handleCombatInput(input);
+    return;
+  }
+    if (step === 200) {  // Boss combat
+    bossInputHandler(input);
     return;
   }
   switch (step) {
@@ -126,31 +131,38 @@ function nextStep() {
             writeToGameBox("\n\nYou head into the wind...");
             if (Encounter < 25) {
                 writeToGameBox("You suddenly smell capitalism.... [Merchant encounter coming soon]");
+                return;       
             } else if (Encounter < 50) {
                 writeToGameBox("You feel like you're being watched.... [Oracle encounter coming soon]");
+                return;       
             } else {
                 writeToGameBox("You see a familiar face in the distance.... [NPC encounter coming soon]");
                 handleNPCEncounter();  // Start NPC combat when encountered
-                return;               // ←— exit `nextStep` so step stays 100
+                return;               // ←— exit `nextStep` so step stays 200
             }
             break;
             case 2:
             writeToGameBox("\n\nYou follow the footprints...");
             if (Encounter < 33) {
                 writeToGameBox("You smell capitalism again... [Merchant]");
+                return;       
             } else if (Encounter < 66) {
                 writeToGameBox("You feel watched... [Oracle]");
+                return;       
             } else {
                 writeToGameBox("You meet someone familiar... [NPC]");
                 handleNPCEncounter();  // Start NPC combat when encountered
-                return;               // ←— keep `step = 100`
+                return;               // ←— keep `step = 200`
             }
             break;
             case 3:
             writeToGameBox("\n\nA roar echoes nearby... [Boss encounter coming soon]");
             if (npcWins >= 10) {
                 writeToGameBox("A mighty roar shakes the earth...\nThe boss approaches!!");
+                step = 200;       // Tells the game you're now in boss mode
+                bossStep = 0;     // Resets boss interaction step
                 BossB(); // Start the boss battle
+                return;       
               } else {
                 writeToGameBox(`You feel a strange energy in the air... but you're not ready yet.\n(Win ${10 - npcWins} more battles to unlock the boss!)`);
               }
@@ -234,62 +246,73 @@ function BossB() {
     bossStep = 0;
     writeRed(`\n==============================================================================================\nYou have spotted the Boss... oh ho, ha ha...\n\n${evilBoss.name} blocks your path to Nick Cage.\nPrepare for battle!\n\nPress Submit to continue.`);
     updateEnemyStats();
+    step = 200; // ← tell nextStep you're now in Boss Combat Mode!
   }
 
   function bossInputHandler(input) {
     input = input.trim();
-  
+
     if (bossStep === 0) {
-      bossStep++;
-      writeRed(`\nEnemy Stats: ${evilBoss.name} | Health: ${evilBoss.health}\nChoose your attack:\n1. Unlayer the Ogre\n2. Do the roar\n3. Be a swampy boy`);
-    } else if (bossStep === 1) {
-      const choice = parseInt(input);
-      if (![1, 2, 3].includes(choice)) {
-        writeToGameBox("Please enter a valid attack number (1-3).");
-        return;
-      }
-  
-      bossChoice = choice;
-      const npcA = evilBoss.attack(); // Get boss attack
-  
-      // Display the boss attack
-      let outcomeText = `\n${evilBoss.name} used ${evilBoss.pow}!`;
-  
-      // Check for draw
-      if (choice === npcA) {
-        outcomeText += `\nIt's a draw! ${evilBoss.name}'s attack deflects your move!`;
-        Shrek.energy -= 10; // Player loses energy
-      } else if (
-        (choice === 1 && npcA === 3) ||
-        (choice === 2 && npcA === 1) ||
-        (choice === 3 && npcA === 2)
-      ) {
-        // Player hits the boss
-        let damage = 30 + (30 * Shrek.luck); // Calculate damage
-        evilBoss.takeDamage(damage);
-        Shrek.energy -= 10;
-        Shrek.luck += 0.05;
-        outcomeText += `\nYou hit ${evilBoss.name} for ${damage.toFixed(1)} damage!`;
-      } else {
-        // Boss hits the player
-        Shrek.health -= 20;
-        Shrek.energy -= 10;
-        outcomeText += `\nYou were hit! ${evilBoss.name}'s attack landed.`;
-      }
-  
-      // Make sure health and energy don't go below zero
-      if (Shrek.health <= 0) Shrek.health = 0;
-      if (Shrek.energy <= 0) Shrek.energy = 0;
-      
-      updateStats(); // Update player stats
-      updateEnemyStats(); // Update enemy stats
-  
-      // Check for game over or victory
-      if (Shrek.health <= 0) {
-        writeToGameBox("\nYou were defeated! Game over.");
-        return;
-      } else if (evilBoss.health <= 0) {
-        writeToGameBox(`
+        writeRed(`\nEnemy Stats: ${evilBoss.name} | Health: ${evilBoss.health}\n`);
+        writeToGameBox(
+            `Choose your attack:\n` +
+            `1. Unlayer the Ogre\n` +
+            `2. Do the roar\n` +
+            `3. Be a swampy boy`
+          );
+        bossStep = 1;
+        return; // Add return here to exit the function and wait for input
+    } 
+
+    if (bossStep === 1) {
+        const choice = parseInt(input);
+        if (![1, 2, 3].includes(choice)) {
+            writeToGameBox("Please enter a valid attack number (1-3).");
+            return;
+        }
+
+        bossChoice = choice;
+        const npcA = evilBoss.attack(); // Get boss attack
+
+        // Display the boss attack
+        let outcomeText = `\n${evilBoss.name} used ${evilBoss.pow}!`;
+
+        // Check for draw
+        if (choice === npcA) {
+            outcomeText += `\nIt's a draw! ${evilBoss.name}'s attack deflects your move!`;
+            Shrek.energy -= 10; // Player loses energy
+        } else if (
+            (choice === 1 && npcA === 3) ||
+            (choice === 2 && npcA === 1) ||
+            (choice === 3 && npcA === 2)
+        ) {
+            // Player hits the boss
+            let damage = 30 + (30 * Shrek.luck); // Calculate damage
+            evilBoss.takeDamage(damage);
+            Shrek.energy -= 10;
+            Shrek.luck += 0.05;
+            outcomeText += `\nYou hit ${evilBoss.name} for ${damage.toFixed(1)} damage!`;
+        } else {
+            // Boss hits the player
+            Shrek.health -= 20;
+            Shrek.energy -= 10;
+            outcomeText += `\nYou were hit! ${evilBoss.name}'s attack landed.`;
+        }
+
+        // Make sure health and energy don't go below zero
+        if (Shrek.health <= 0) Shrek.health = 0;
+        if (Shrek.energy <= 0) Shrek.energy = 0;
+        
+        updateStats(); // Update player stats
+        updateEnemyStats(); // Update enemy stats
+
+        // Check for game over or victory
+        if (Shrek.health <= 0) {
+            writeToGameBox("\nYou were defeated! Game over.");
+            step = 5; // End the game or return to main menu after defeat
+            return;
+        } else if (evilBoss.health <= 0) {
+            writeToGameBox(`
     ==============================================================================================
     You have defeated ${evilBoss.name}! 🏆
     You approach the mystery man... "Nick Cage?" you ask.
@@ -299,14 +322,15 @@ function BossB() {
     CONGRATS ${Shrek.actualName}!!! You beat the game. HA, I did know your name all along Shrek. 
     ==============================================================================================
     `);
-        bossStep = -1; // End the boss fight
-        return;
-      }
-  
-      bossStep = 0; // Continue the fight
-      writeToGameBox(outcomeText + "\n\nPress Submit to attack again.");
+            bossStep = -1; // End the boss fight
+            step = 5; // After the boss fight, return to the path selection or main menu
+            return;
+        }
+
+        bossStep = 0; // Continue the fight (reset bossStep for next round)
+        writeToGameBox(outcomeText + "\n\nPress Submit to attack again.");
     }
-  }
+}
 
 function createRandomWackyCharacter() {
 const names = [
