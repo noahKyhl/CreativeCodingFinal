@@ -33,6 +33,15 @@
       padding: 8px;
       margin-top: 10px;
     }
+
+    #menu-box, #summary-box {
+      background: #000000;
+      color: #00ff00;
+      padding: 20px;
+      border: 1px solid #ccc;
+      margin-top: 20px;
+    }
+
   </style>
 </head>
 <body>
@@ -47,14 +56,5 @@
     <script src="NPC.js"></script> <!-- Your JS file -->
     <script src="Boss.js"></script> <!-- Your JS file -->
     <script src="Program.js"></script> <!-- Go last for load order -->
-    <script>
-    // Make "Enter" key trigger the Submit button click
-    document.getElementById("input-box").addEventListener("keydown", function (e) {
-      if (e.key === "Enter") {
-        e.preventDefault(); // Prevent default form behavior just in case
-        document.querySelector("button").click(); // Simulate a button click
-      }
-    });
-  </script>
 </body>
 </html>

@@ -6,6 +6,19 @@ let currentEnemy;
 let bossStep = 0;
 let evilBoss;
 let bossChoice = 0;
+let merchantStep = 0;
+let merchantStepProductIndex = 0;
+let questionQuant    = 0;
+let totalFin         = 0;
+let CarriedResponses = [];
+
+let products = [
+  { name: "Apple Pie", price: 4.69, quant: 0, health: 50, energy: 0 },
+  { name: "Battery Acid", price: 4.20, quant: 0, health: -25, energy: 100 },
+  { name: "Coffee", price: 4.50, quant: 0, health: 0, energy: 50 },
+  { name: "Hearty Steak", price: 10.0, quant: 0, health: 100, energy: 100 },
+  { name: "Leftovers?", price: 4.44, quant: 0, health: 100, energy: -25 }
+];
 
 const actualName = "Shrek";
 
@@ -43,23 +56,37 @@ to seek him out.
 You feel a strange energy pulling you forward… and an unsettling warmth from
 the satchel at your side. You open it. Onions. So many onions. You don’t know why.
 
-(hit enter)`;
+(hit "submit" to PLAY)`;
 
-  writeToGameBox(introText, true);
+writeToGameBox(introText, true);
 }
 
 function nextStep() {
   const inputBox = document.getElementById("input-box");
   const input = inputBox.value.trim();
   inputBox.value = "";
-    if (step === 100) { // NPC combat
-    handleCombatInput(input);
-    return;
-  }
-    if (step === 200) {  // Boss combat
-    bossInputHandler(input);
-    return;
-  }
+    if (step === 100) {
+      handleCombatInput(input);
+      return;
+    }
+    if (step === 200) {
+      bossInputHandler(input);
+      return;
+    }
+    if (step === 300) {
+      // If we're at the confirmation prompt (merchantStep 3), send to confirmPurchase
+      if (merchantStep === 3) {
+        confirmPurchase(input);
+      } else {
+        handleMerchantInput(input);
+      }
+      return; 
+    }
+    if (step === 400) {
+      handleOracleInput(input);
+      return;
+    }
+
   switch (step) {
     case 0:
       writeToGameBox("\n\nBut first things first… what’s your name, traveler?");
@@ -134,9 +161,11 @@ function nextStep() {
             writeToGameBox("\n\nYou head into the wind...");
             if (Encounter < 25) {
                 writeToGameBox("You suddenly smell capitalism.... [Merchant encounter coming soon]");
+                setupMerchant();
                 return;       
             } else if (Encounter < 50) {
                 writeToGameBox("You feel like you're being watched.... [Oracle encounter coming soon]");
+                setupOracle();
                 return;       
             } else {
                 writeToGameBox("You see a familiar face in the distance.... [NPC encounter coming soon]");
@@ -148,9 +177,11 @@ function nextStep() {
             writeToGameBox("\n\nYou follow the footprints...");
             if (Encounter < 33) {
                 writeToGameBox("You smell capitalism again... [Merchant]");
+                setupMerchant();
                 return;       
             } else if (Encounter < 66) {
                 writeToGameBox("You feel watched... [Oracle]");
+                setupOracle();
                 return;       
             } else {
                 writeToGameBox("You meet someone familiar... [NPC]");
@@ -181,9 +212,8 @@ function nextStep() {
         // Only loop back if no combat was triggered
         step = 5;
         break;
-  }
-}
-
+      }
+    }
 function loadGame() {
     const savedData = localStorage.getItem("userData");
     if (savedData) {
@@ -508,230 +538,292 @@ function handleCombatInput(input) {
   }
 }
 
-function writeRed(text) {
-    const gameBox = document.getElementById("game-box");
-    // wrap in a div so it’s on its own line
-    gameBox.innerHTML += `<div style="color:rgb(217, 84, 110)">${text}</div>`;
+// cart resetter
+function resetCart() {
+  products.forEach(p => p.quant = 0);
 }
+
+// Merchant interaction - starting the encounter
+function setupMerchant() {
+  writeToGameBox("Welcome to the Merchant's shop! ------- ", true);
+  merchantStep = 0; // Reset merchant flow
+  step = 300; // Enter merchant interaction
+  showMerchantMenu();
+}
+
+// Display the shop's menu with product options
+function showMerchantMenu() {
+  Stats();
+  let menu = "Choose an item to purchase:\n";
   
-/*
-
-function Merchant() {
-    // Product list, similar to C# method
-    let pro1 = new Products("Apple Pie", 4.69, 0, 50, 0);
-    let pro2 = new Products("Battery Acid", 4.20, 0, -25, 100);
-    let pro3 = new Products("Coffee", 4.50, 0, 0, 50);
-    let pro4 = new Products("Hearty helping of steak", 10.0, 0, 100, 100);
-    let pro5 = new Products("Questionable leftovers?", 4.44, 0, 100, -25);
-
-    let products = [pro1, pro2, pro3, pro4, pro5];
-
-    let exit = 2; // exit variable to end merchant visit
-    let totalFin = 0; // Total cost tracker
-
-    do {
-        Stats(); // Display stats
-
-        console.log(`==============================================================================================\nWelcome! You must be hungry and tired.\nI am the Merchant and I sell some tasty treats! Buy and use here at the shop before you head back out on your travels. I assure you, no negative side effects :)\nPlease place your order by selecting the product and subsequently providing the quantity desired.\n\nHere is the menu:`);
-
-        products.forEach((product, i) => {
-            console.log(`| ${i} | Product:  ${product.name}   | Price:  ${product.price}   | Your Quant:  ${product.quant}   | Health Benefits:  ${product.health}   | Energy Benefits:  ${product.energy}   |`);
-        });
-
-        console.log("==============================================================================================\nWhat would you like to order?");
-        let order = parseInt(prompt("Enter your choice: "), 10);
-
-        if (order >= 0 && order < products.length) { // If product selection is valid
-            console.clear();
-            let selectedProduct = products[order];
-
-            console.log("==============================================================================================\nHow many would you like to order?");
-            let quantity = parseFloat(prompt("Enter quantity: "));
-
-            console.log(`==============================================================================================\nYou want ${quantity} of ${selectedProduct.name}`);
-            let total = quantity * selectedProduct.price;
-            selectedProduct.quant += quantity;
-            totalFin += total;
-
-            console.log(`==============================================================================================\nThe current total for your order is $${totalFin}`);
-
-            console.log("If you are finished ordering, please input 1; otherwise, if you would\nlike to add to your order, please input 2.");
-            exit = parseInt(prompt("Choose option (1 to finish, 2 to continue): "), 10);
-        } else {
-            console.clear();
-            console.log("==============================================================================================\nHey bud, you failed to select an option please try again if ya got the munchies.");
-        }
-
-    } while (exit === 2);
-
-    while (exit === 1) {
-        console.clear();
-        console.log("==============================================================================================\nHere is a summary of your final order:");
-        products.forEach(product => {
-            console.log(`| Product:  ${product.name}   | Quant:  ${product.quant} |`);
-        });
-
-        console.log(`==============================================================================================\nThe total cost for your order is $${totalFin}`);
-        console.log(`\nYour current wallet has $${Shrek.wallet}`);
-
-        if (Shrek.wallet < totalFin) {
-            console.clear();
-            console.log("==============================================================================================\nSorry, you are too broke for this purchase, leave my store...");
-            return;
-        } else {
-            console.clear();
-            console.log("==============================================================================================\nSubtracting money from user account and applying items effects to Shrek's stats!");
-            Shrek.wallet -= totalFin;
-
-            products.forEach(product => {
-                Shrek.health += product.health * product.quant;
-                Shrek.energy += product.energy * product.quant;
-            });
-            break;
-        }
-    }
-
-    if (exit !== 2 && exit !== 1) {
-        console.clear();
-        console.log("==============================================================================================\nError!");
-        return;
-    }
-}///End of Merchant
-
-let questionQuant = 0; // Global quantity for the question variable
-let totalFin = 0; // Global variable that adds up the total price
-let quest = false; // Trigger for "another question"
-let luck = 0; // Creates a luck pool variable
-let CarriedResponses = []; // Creates an empty array to store past conversations
-let response = ""; // This will store the generated response
-
-let good = ["a pretty chill guy.", "Throw caution to the wind, you got this!", "you're too good for Mr. Cage.", "unlayer your onion Shrek."];
-let neutral = ["a bagel", "explore and find random encounters.", "why not?", "drink some caffeine."];
-let bad = ["you're a sad pathetic lil bug.", "quit the game, you don't look like you can find Nick.", "...you just ain't it Shrek.", "get out of MY swamp Shrek, you hypocrite."];
-let text = ["Nicholas Cage thinks your", "Today is a day to", "Question yourself because", "This is an ideal time to"];
-
-function Oracle() {
-    // Creates array for response pool below
-    const text = ["Nicholas Cage thinks your", "Today is a day to", "Question yourself because", "This is an ideal time to"];
-
-    // End of responses based on good, neutral, and bad
-    const good = ["a pretty chill guy.", "Throw caution to the wind, you got this!", "your too good for Mr. Cage.", "unlayer your onion Shrek."];
-    const neutral = ["a bagel", "explore and find random encounters.", "why not?", "drink some caffeine."];
-    const bad = ["your a sad pathetic lil bug.", "quit the game, you don't look like you can find Nick.", "...you just aint it Shrek.", "get out of MY swamp Shrek, you hypocrite."];
-
-    let questionQuant = 0;  // Global quantity if question variable
-    let totalFin = 0.00;  // Works as a global variable that adds up your total price
-    let quest = false;  // my bool for triggering "another question"
-    let response;  // this will be given through my method
-    let luck = 0.00;  // creates a luck pool variable
-
-    // Clears the console (if using Node.js, you might need a package like 'console.clear()')
-    console.clear();
-    console.log("==============================================================================================\nPlease be aware, I do charge $3.50 a question, and if you ask be ready to pay or I will be upset.");
-
-    do {
-        Stats();  // displays stats
-
-        while (quest === false) {  // OG question
-            console.log(`==============================================================================================\n1) Ask a question\n2) Review questions/responses\n3) Quit services and pay`);
-            break;
-        }
-
-        while (quest === true) {  // Another question
-            console.log(`==============================================================================================\n1) Ask another question\n2) Review questions/responses\n3) Quit services and pay`);
-            break;
-        }
-
-        let selection1 = parseInt(prompt());  // Read user input (use prompt in browser or readline in Node.js)
-
-        if (selection1 === 1) {
-            console.clear();
-            questionQuant += 1;  // adds 1 to global quant
-            totalFin += 3.50;  // adds cost of question to global total
-
-            console.log("==============================================================================================\nWhat is your question, child?");  // asks question
-            let question = prompt();  // Uses input and stores it as question
-
-            // Adds question to a list (since no list class in JS, use array)
-            CarriedResponses.push(`Question: ${question}`);
-
-            myResponse();  // response is generated
-            console.log(response);
-
-            // Adds response to the list
-            CarriedResponses.push(`Response: ${response}`);
-
-            console.log();
-            quest = true;  // triggers loop
-        } else if (selection1 === 2) {
-            console.clear();
-            console.log("==============================================================================================\nThe oracle knows all. Here are your fortunes to review:\n");
-            storedResponses();  // fortune history is displayed
-        } else if (selection1 === 3) {
-            console.clear();
-            console.log("==============================================================================================\nThank you for visiting the mighty and incredibly awesome machine, myth, and legend, The Oracle. I hope you enjoyed your visit you silly human.\n");
-            console.log(`You asked ${questionQuant} questions. You currently owe $${totalFin}. I accept all major credit cards from all major banks.\nI also accept praise and affirmation, does not count as payment though.\nClick 1 to pay and collect your fortune. 2 to quit and leave without any buffs.`);
-            let payOracle = parseInt(prompt());
-
-            if (payOracle === 1 && Shrek.Wallet >= totalFin) {
-                console.clear();
-                Shrek.Wallet -= totalFin;  // subtracts expense
-                console.log("==============================================================================================\nYou have paid me well, let your rightful fortune be placed upon you!");
-                Shrek.Luck += luck;  // adds good fortune
-            } else if (payOracle === 2 || Shrek.Wallet < totalFin) {
-                console.clear();
-                console.log("==============================================================================================\nYou have attempted to leave without paying or have insufficient funds, you have angered the oracle!\nBad Faith has been placed on you and your journey...");
-                let curse = questionQuant * 0.05;  // curse is added based on the amount of questions asked
-                Shrek.Luck -= curse;  // curse is placed on user's luck
-            } else {
-                console.clear();
-                console.log("==============================================================================================\nYou have failed to either input a correct value or have insufficient funds, you have angered the oracle!\nBad Faith has been placed on you and your journey...");
-                let curse = questionQuant * 0.05;  // curse is added based on the amount of questions asked
-                Shrek.Luck -= curse;  // curse is placed on user's luck
-            }
-            break;  // exit loop
-        } else {
-            console.clear();
-            console.log("==============================================================================================\nERROR, ERROR, ERROR, Beep Boop Beep Boop. You have failed to provide correct input, if you are trying to quit, you suck. If you have a total, please input 3 to quit, if not you're free to leave.");
-        }
-
-    } while (questionQuant > 0);  // if they have asked a question, the program will loop through until they quit
-
-    // Method for generating a response
-    function myResponse() {
-        const switchRan = Math.floor(Math.random() * 3);  // creates random variable for switch path
-        const RanRan = Math.floor(Math.random() * 4);  // creates random variable for text
-
-        let goodbadneutral = "";  // creates empty string variable to store eventual random
-
-        switch (switchRan) {
-            case 0:
-                goodbadneutral = good[RanRan];  // picks an end task from good list
-                luck += 0.10;  // stores good luck
-                break;
-            case 1:
-                goodbadneutral = bad[RanRan];  // picks an end task from bad list
-                luck -= 0.05;  // stores bad luck
-                break;
-            case 2:
-                goodbadneutral = neutral[RanRan];  // picks an end task from neutral list
-                break;
-        }
-
-        response = `${text[RanRan]} ${goodbadneutral}`; 
-        return response;  // returns full message for response
-    }
-
-    // Method for storing and displaying past responses
-    function storedResponses() {
-        CarriedResponses.forEach(item => {
-            console.log(`\n${item}`);
-        });
-    }
+  // Display each product and the quantity player owns
+  products.forEach((p, i) => {
+    menu += `${i + 1}. ${p.name} - $${p.price} | ❤️ ${p.health} | ⚡ ${p.energy} (You own: ${p.quant})\n`;
+  });
+  
+  // Option to finish shopping and proceed
+  menu += `${products.length + 1}. Finish and Checkout`;
+  writeToGameBox(menu);
+  merchantStep = 1;
 }
-*/
+function handleMerchantInput(input) {
+  // Trim input and handle string conversion to integer
+  const choice = parseInt(input.trim(), 10);  // Convert input to integer and remove spaces
 
+  console.log("Input received:", input, "Parsed choice:", choice);  // Debugging
 
+  // Player has chosen an item to purchase
+  if (merchantStep === 1) {
+    console.log("Merchant Step 1: Item selection");  // Debugging
+    if (!isNaN(choice) && choice >= 1 && choice <= products.length) {
+      // Ask for the quantity to buy
+      merchantStep = 2;
+      merchantStepProductIndex = choice - 1; // Save the selected product index (zero-based)
+      writeToGameBox(`How many ${products[merchantStepProductIndex].name} would you like to buy?`);
+    } else if (choice === products.length + 1) {
+      // Player wants to checkout
+      checkout();
+    } else {
+      writeToGameBox("Invalid choice. Please select a valid option.");
+      showMerchantMenu(); // Re-display the menu
+    }
+  } 
+  // Player has selected the quantity for the item
+  else if (merchantStep === 2) {
+    const quantity = parseInt(input.trim(), 10);
+    console.log("Merchant Step 2: Quantity selection, Quantity:", quantity);  // Debugging
+    if (isNaN(quantity) || quantity <= 0) {
+      writeToGameBox("Invalid quantity. Please enter a valid number.");
+      merchantStep = 1; // Go back to product menu for another attempt
+      showMerchantMenu();
+      return;
+    }
+
+    // Update the quantity of the chosen product
+    products[merchantStepProductIndex].quant += quantity;
+    writeToGameBox(`Added ${quantity} x ${products[merchantStepProductIndex].name} to your cart.`);
+    merchantStep = 1; // Go back to the item selection menu
+    showMerchantMenu();
+  }
+}
+
+// Proceed with the checkout
+function checkout() {
+  let total = products.reduce((acc, p) => acc + p.price * p.quant, 0);
+  writeToGameBox(`Your total is $${total.toFixed(2)}. You have $${Shrek.wallet}. Confirm purchase? (yes/no)`);
+  merchantStep = 3; // Await confirmation
+}
+
+// Handle confirmation or cancellation of the purchase
+function confirmPurchase(input) {
+  let total = products.reduce((acc, p) => acc + p.price * p.quant, 0);
+
+  if (input.toLowerCase() === "yes") {
+    if (Shrek.wallet >= total) {
+      // Deduct the cost
+      Shrek.wallet -= total;
+
+      // Apply effects of each purchased item
+      products.forEach(p => {
+        if (p.quant > 0) {
+          // Apply health & energy effects
+          Shrek.health += p.health * p.quant;
+          Shrek.energy += p.energy * p.quant;
+
+          writeToGameBox(
+            `Purchased ${p.quant}× ${p.name} for $${(p.price * p.quant).toFixed(2)}. ` +
+            `Effects: ${p.health * p.quant >= 0 ? "+" : ""}${p.health * p.quant} HP, ` +
+            `${p.energy * p.quant >= 0 ? "+" : ""}${p.energy * p.quant} Energy.`
+          );
+        }
+      });
+
+      // Now that effects are applied, reset the cart
+      resetCart();
+
+      // Refresh the stats display
+      Stats();
+
+      writeToGameBox(`You have $${Shrek.wallet.toFixed(2)} left.`);
+      merchantStep = 0;
+      step = 5;
+    } else {
+      writeToGameBox("You don't have enough money! The Merchant kicks you out.");
+      resetCart();
+      merchantStep = 0;
+      step = 5;
+    }
+  } 
+  else if (input.toLowerCase() === "no") {
+    writeToGameBox("You decided not to buy anything. The Merchant waves goodbye.");
+    resetCart();
+    merchantStep = 0;
+    step = 5;
+  } 
+  else {
+    writeToGameBox("Invalid input. Please type 'yes' or 'no'.");
+  }
+}
+
+function setupOracle() {
+  writeToGameBox("\n🌀 A smoky voice whispers:\n\n”The Oracle stands ready… $3.50 a question.”\n", true);
+  questionQuant    = 0;
+  totalFin         = 0;
+  CarriedResponses = [];
+  step = 400;
+  showOracleMenu();
+}
+
+function showOracleMenu() {
+  Stats();
+  writeToGameBox(`
+📜  Oracle Menu  📜
+
+1) ❓  Ask a question  ($3.50 each)
+2) 🔍  Review past fortunes
+3) 💰  Pay and depart
+
+`);
+  merchantStep = 0;  // re-use merchantStep as “sub-step” inside Oracle
+}
+
+function handleOracleInput(input) {
+  const choice = parseInt(input, 10);
+
+  // SUB-STEP 0: main menu
+  if (merchantStep === 0) {
+    if (choice === 1) {
+      merchantStep = 1;
+      totalFin += 3.50;
+      questionQuant++;
+      writeToGameBox("What is your question?");
+    }
+    else if (choice === 2) {
+      writeToGameBox("Your past questions & answers:");
+      CarriedResponses.forEach(r => writeToGameBox("  " + r));
+      showOracleMenu();
+    }
+    else if (choice === 3) {
+      merchantStep = 2;
+      writeToGameBox(`You owe $${totalFin.toFixed(2)}. Pay now? (yes/no)`);
+    }
+    else {
+      writeToGameBox("Invalid—choose 1, 2, or 3.");
+      showOracleMenu();
+    }
+    return;
+  }
+
+  // SUB-STEP 1: we’ve asked “What is your question?”
+  if (merchantStep === 1) {
+    const question = input;
+    CarriedResponses.push("Q: " + question);
+
+    // generate the Oracle’s answer
+
+// 1) Define one array of cohesive “prefix + suffix” pairs:
+const oracleResponses = [
+  { prefix: "Nicholas Cage thinks you’re",          suffix: "a pretty chill soul." },
+  { prefix: "Nicholas Cage thinks you’re",          suffix: "too good for Mr. Cage." },
+  { prefix: "Nicholas Cage thinks you’re",          suffix: "destined for glory." },
+
+  { prefix: "Beware, for",                           suffix: "you’re a sad, pathetic bug." },
+  { prefix: "I regret to inform you that",           suffix: "your luck has run dry." },
+  { prefix: "The fates whisper that",                suffix: "the swamp itself rejects you." },
+
+  { prefix: "Curiously,",                            suffix: "you might enjoy a bagel." },
+  { prefix: "For what it’s worth,",                  suffix: "you could use a strong coffee." },
+  { prefix: "Some say that",                         suffix: "mysterious encounters await." },
+];
+
+// 2) Pick one at random:
+const choice = oracleResponses[
+  Math.floor(Math.random() * oracleResponses.length)
+];
+
+// 3) Build your answer from that single pair:
+const answer = `${choice.prefix} ${choice.suffix}`;
+
+// 4) Record & display it
+CarriedResponses.push("A: " + answer);
+writeToGameBox(`
+
+  ✨  ${answer}
+  
+  `);
+  
+merchantStep = 0;
+showOracleMenu();
+
+}
+
+  // SUB-STEP 2: confirmation of payment
+  if (merchantStep === 2) {
+    if (input.toLowerCase()==="yes") {
+      if (Shrek.wallet >= totalFin) {
+        Shrek.wallet -= totalFin;
+        writeToGameBox(`Paid $${totalFin.toFixed(2)}. Luck +${questionQuant*0.1}.`);
+        Shrek.luck += questionQuant * 0.1;
+      } else {
+        writeToGameBox("Not enough money—Oracle is displeased. Luck -0.05 per question.");
+        Shrek.luck -= questionQuant * 0.05;
+      }
+    } else {
+      writeToGameBox("You leave without paying. Luck -0.05 per question.");
+      Shrek.luck -= questionQuant * 0.05;
+    }
+    Stats();
+    step = 5;  // back to main game
+    return;
+  }
+}
+
+function writeRed(text) {
+  const gameBox = document.getElementById("game-box");
+  // wrap in a div so it’s on its own line
+  gameBox.innerHTML += `<div style="color:rgb(217, 84, 110)">${text}</div>`;
+}
+
+document.addEventListener("keydown", function(event) {
+const key = event.key;
+console.log("Key pressed:", key);
+
+// For steps 4–6 (main menu) and combat (100/200), still allow single-key shortcuts:
+if ([4, 5, 6].includes(step)) {
+  if (["1","2","3","4","5"].includes(key)) {
+    event.preventDefault();
+    document.getElementById("input-box").value = key;
+    nextStep();
+    return;
+  }
+}
+if (step === 100 || step === 200) {
+  if (["1","2","3"].includes(key)) {
+    event.preventDefault();
+    document.getElementById("input-box").value = key;
+    nextStep();
+    return;
+  }
+}
+
+// **Merchant (step 300)**: let the user type any number of digits,
+// then only on Enter do we submit.
+if (step === 300) {
+  if (key === "Enter") {
+    event.preventDefault();
+    nextStep();
+  }
+}
+
+// Oracle (step 400): only submit on Enter too
+if (step === 400) {
+  if (key === "Enter") {
+    event.preventDefault();
+    nextStep();
+  }
+  return;
+}
+});
 
 
 
