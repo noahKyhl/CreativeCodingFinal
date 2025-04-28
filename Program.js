@@ -35,6 +35,15 @@ function writeToGameBox(text, clear = false) {
         gameBox.innerHTML += (gameBox.innerHTML ? "<br>" : "") + html;
     }
 }
+
+function showImage(imagePath) {
+  const imageBox = document.getElementById("image-box");
+  const image = document.getElementById("event-image");
+
+  image.src = imagePath;  // Set the path of the image
+  imageBox.style.display = "block";  // Make the image container visible
+}
+
   
 // Show intro text once on page load
 window.onload = () => {
@@ -60,6 +69,8 @@ the satchel at your side. You open it. Onions. So many onions. You don’t know 
 
 writeToGameBox(introText, true);
 }
+
+showImage("images/cage princess.png");
 
 function nextStep() {
   const inputBox = document.getElementById("input-box");
@@ -103,6 +114,7 @@ function nextStep() {
         break;
     case 2:
         writeToGameBox(`\n\nAlright Shrek, glad we're on the same page. Press Enter to continue!`);
+        showImage("images/happy shrek.png");
         step++;
         break;
     case 3:
@@ -206,6 +218,7 @@ function nextStep() {
             break;
             case 5:
             gameOver("You have abandoned your quest. Nicholas Cage weeps.");
+            showImage("images/quit.png");
             return;
         }
         
@@ -261,6 +274,7 @@ function Stats() {
 
 function gameOver(reason = "Your journey ends here.") {
   writeToGameBox(`\n\n================ GAME OVER ================\n${reason}\n===========================================`, true);
+  showImage("images/game over.png");
   step = -1; // Set step to an invalid value to prevent further input
   document.getElementById("input-box").disabled = true;
 }
@@ -273,6 +287,7 @@ function Cage() {
   *You look at the oddly Nick Cage-shaped stars*
   Game has been saved...
   `);
+  showImage("images/unnamed.png");
     SaveGame(Shrek);
   }
 
@@ -282,6 +297,7 @@ function BossB() {
   step = 200; // boss combat mode
   writeRed(`\n\nYou have spotted the Boss... oh ho, ha ha...`);
   writeToGameBox(`\n${evilBoss.name} blocks your path to Nick Cage.\nPrepare for battle!`);
+  showImage("images/shreks boss.png");
   setTimeout(showBossMenu, 300); // slight delay for smoothness
 }
 
@@ -369,6 +385,7 @@ function bossInputHandler(input) {
             CONGRATS ${Shrek.actualName}!!! You beat the game. HA, I did know your name all along Shrek. 
             ==============================================================================================
             `);
+            showImage("images/happy shrek.png");
         Stats();
       // cleanly exit combat:
         step = 5;
@@ -379,6 +396,7 @@ function bossInputHandler(input) {
       if (Shrek.health <= 0) {
         writeToGameBox("\nYou have been defeated! Game over.", true);
         Stats();
+        showImage("images/game over.png");
         step = 5;
         bossStep = 0;
         evilBoss = null;
@@ -434,6 +452,7 @@ function handleNPCEncounter() {
   step = 100;
   writeRed(`\n\nYou encounter ${npc.name}! Prepare for combat.`);
   writeToGameBox(`\n\n[Combat starts with ${npc.name}]\n\n`);
+  showImage("images/fight.png");
   handleCombatInput(""); // Immediately prompt the attack choices
 }
 
@@ -457,10 +476,12 @@ function handleCombatInput(input) {
 
   if (Shrek.health <= 0) {
     gameOver("You have been defeated in combat!");
+    showImage("images/game over.png");
     return;
   }
   if (Shrek.energy <= 0) {
     gameOver("You ran out of energy... so very tired.");
+    showImage("images/game over.png");
     return;
   }
   
@@ -546,6 +567,7 @@ function resetCart() {
 // Merchant interaction - starting the encounter
 function setupMerchant() {
   writeToGameBox("Welcome to the Merchant's shop! ------- ", true);
+  showImage("images/merchant.png");
   merchantStep = 0; // Reset merchant flow
   step = 300; // Enter merchant interaction
   showMerchantMenu();
@@ -566,6 +588,7 @@ function showMerchantMenu() {
   writeToGameBox(menu);
   merchantStep = 1;
 }
+
 function handleMerchantInput(input) {
   // Trim input and handle string conversion to integer
   const choice = parseInt(input.trim(), 10);  // Convert input to integer and remove spaces
@@ -667,6 +690,7 @@ function confirmPurchase(input) {
 
 function setupOracle() {
   writeToGameBox("\n🌀 A smoky voice whispers:\n\n”The Oracle stands ready… $3.50 a question.”\n", true);
+  showImage("images/oracle.png");
   questionQuant    = 0;
   totalFin         = 0;
   CarriedResponses = [];
@@ -751,7 +775,7 @@ writeToGameBox(`
   ✨  ${answer}
   
   `);
-  
+
 merchantStep = 0;
 showOracleMenu();
 
