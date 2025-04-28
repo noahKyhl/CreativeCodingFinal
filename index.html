@@ -3,62 +3,99 @@
 <head>
   <title>Noah's Game Page</title>
   <style>
-    body {
-      font-family: monospace;
-      background: #032908;
-      padding: 20px;
-      color: #00ff00; /* neon green text for terminal feel */
-    }
+  body {
+    font-family: monospace;
+    background: #032908;
+    padding: 20px;
+    color: #00ff00;
+  }
 
-    #game-box {
-      white-space: pre-line;
-      background: #000000;
-      color: #00ff00;
-      padding: 20px;
-      border: 1px solid #ccc;
-      min-height: 300px;
-    }
+  #game-box {
+    white-space: pre-line;
+    background: #000000;
+    color: #00ff00;
+    padding: 20px;
+    border: 1px solid #ccc;
+    min-height: 300px;
+    margin-bottom: 20px;
+  }
 
-    #stats-box {
-      background: #222222;
-      color: #00ff00;
-      padding: 20px;
-      border: 1px solid #ccc;
-      margin-top: 20px;
-      min-height: 150px;
-    }
+  #info-container {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+  align-items: flex-start;
+}
 
-    input, button {
-      font-family: monospace;
-      padding: 8px;
-      margin-top: 10px;
-    }
+#left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
 
-    #menu-box, #summary-box {
-      background: #000000;
-      color: #00ff00;
-      padding: 20px;
-      border: 1px solid #ccc;
-      margin-top: 20px;
-    }
+#stats-box {
+  background: #222222;
+  color: #00ff00;
+  padding: 10px;
+  border: 1px solid #ccc;
+  min-height: 80px;
+  font-size: 14px;
+}
+
+#input-container {
+  display: flex;
+  gap: 10px;
+}
+
+#input-box, button {
+  font-family: monospace;
+  padding: 8px;
+  margin-top: 0;
+}
+
+#image-box {
+  display: none; /* hidden by default */
+  text-align: center;
+  flex: 1;
+}
+
+#event-image {
+  max-width: 300px;
+  height: auto;
+  border: 1px solid #00ff00;
+}
+
+#menu-box, #summary-box {
+  background: #000000;
+  color: #00ff00;
+  padding: 20px;
+  border: 1px solid #ccc;
+  margin-top: 20px;
+}
+</style>
 
   </style>
 </head>
 <body>
-    <div id="game-box"></div> <!-- This is the KEY fix -->
-    <div id="stats-box"></div> <!-- Stats box where user stats will appear -->
-    <div id="image-box" style="display:none; text-align:center; margin-top: 20px;">
-      <img id="event-image" src="" alt="Game Event" style="max-width: 100%; height: auto; border: 1px solid #00ff00;" />
-    </div>
-    
-    <br>
-    <input type="text" id="input-box" placeholder="Type your response..." />
-    <br>
-    <button onclick="nextStep()">Submit</button>
+  <div id="game-box"></div>
 
-    <script src="User.js"></script> <!-- Your JS file -->
-    <script src="NPC.js"></script> <!-- Your JS file -->
-    <script src="Boss.js"></script> <!-- Your JS file -->
-    <script src="Program.js"></script> <!-- Go last for load order -->
+  <div id="info-container">
+    <div id="left-panel">
+      <div id="stats-box"></div>
+      <div id="input-container">
+        <input type="text" id="input-box" placeholder="Type your response..." />
+        <button onclick="nextStep()">Submit</button>
+      </div>
+    </div>
+    <div id="image-box">
+      <img id="event-image" src="" alt="Game Event" />
+    </div>
+  </div>
+  
+  <script src="User.js"></script>
+  <script src="NPC.js"></script>
+  <script src="Boss.js"></script>
+  <script src="Program.js"></script>
 </body>
 </html>
