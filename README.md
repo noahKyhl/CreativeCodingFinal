@@ -1,4 +1,4 @@
-# CreativeCodingFinal GUIDE :)
+# CreativeCodingFinal SHREK GAME GUIDE :)
 
 ## 🧅 How to Play:
 
