@@ -14,7 +14,7 @@ When you first load the page, you’ll see an intro message explaining your ques
 
 After reading the intro, press Submit to begin.
 
-The game will jokingly rename you to Shrek (don’t fight it... embrace it).
+The game will jokingly rename you to Shrek.
 
 Choose:
 
@@ -97,6 +97,10 @@ You’ll need to refresh the page to start again.
 ## 🎭 Tips:
 Stay stocked: Buy healing/energy items often.
 
+Build luck: The more luck u build, the easier the boss is.
+
 Save often: saving game works and is super handy due to RNG nature of game!
 
 Fight smart: Bosses will crush the unprepared.
+
+Anywhere in the game: If unsure of input, try hitting submit/enter.
