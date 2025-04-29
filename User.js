@@ -1,4 +1,3 @@
-// Define the User class
 class User {
     constructor(name, health, wallet, luck, energy) {
         this.name = name;
@@ -8,7 +7,7 @@ class User {
         this.energy = energy;
     }
 
-    // to serialize the object to JSON (for saving purposes)
+    //to serialize object to JSON (for saving game)
     toJSON() {
         return JSON.stringify({
             name: this.name,
@@ -19,12 +18,12 @@ class User {
         });
     }
   
-    // Method to display the user's stats on the web page
+    //display the user's stats on the web page
     stats() {
-      // Get the element where stats should be displayed
+      //puts stats where they should be displayed
       const statsBox = document.getElementById("stats-box");
   
-      // Set the content inside the stats box
+      //sets up the stats box
       statsBox.innerHTML = `
       <div style="text-align: center;">
           <h2>User Stats</h2>

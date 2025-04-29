@@ -55,7 +55,7 @@
 }
 
 #image-box {
-  display: none; /* hidden by default */
+  display: none; 
   text-align: center;
   flex: 1;
 }
@@ -75,22 +75,20 @@
 }
 </style>
 
-  </style>
 </head>
 <body>
   <div id="game-box"></div>
-
   <div id="info-container">
-    <div id="left-panel">
-      <div id="stats-box"></div>
-      <div id="input-container">
-        <input type="text" id="input-box" placeholder="Type your response..." />
-        <button onclick="nextStep()">Submit</button>
-      </div>
-    </div>
-    <div id="image-box">
-      <img id="event-image" src="" alt="Game Event" />
-    </div>
+  <div id="left-panel">
+  <div id="stats-box"></div>
+  <div id="input-container">
+  <input type="text" id="input-box" placeholder="Type your response..." />
+  <button onclick="nextStep()">Submit</button>
+  </div>
+  </div>
+  <div id="image-box">
+  <img id="event-image" src="" alt="Game Event" />
+  </div>
   </div>
   
   <script src="User.js"></script>

@@ -1,16 +1,16 @@
-let step = 0;
-let Shrek;
-let npcWins = 0;
-let npcCombatStep = 0;
-let currentEnemy;
-let bossStep = 0;
-let evilBoss;
-let bossChoice = 0;
-let merchantStep = 0;
-let merchantStepProductIndex = 0;
-let questionQuant    = 0;
-let totalFin         = 0;
-let CarriedResponses = [];
+let step = 0; //main variable to determine current event in program
+let Shrek; //user
+let npcWins = 0; //determine progress for fighting boss
+let npcCombatStep = 0; //determine turn based combat events
+let currentEnemy; //whacky character
+let bossStep = 0; //determine boss event
+let evilBoss; //the boss
+let bossChoice = 0; //boss attack
+let merchantStep = 0; //determine merchant event
+let merchantStepProductIndex = 0; //for the shop
+let questionQuant    = 0; //oracle question quantity
+let totalFin         = 0; //purchase amount charged
+let CarriedResponses = []; //stores oracle responses
 
 let products = [
   { name: "Apple Pie", price: 4.69, quant: 0, health: 50, energy: 0 },
@@ -18,15 +18,15 @@ let products = [
   { name: "Coffee", price: 4.50, quant: 0, health: 0, energy: 50 },
   { name: "Hearty Steak", price: 10.0, quant: 0, health: 100, energy: 100 },
   { name: "Leftovers?", price: 4.44, quant: 0, health: 100, energy: -25 }
-];
+]; //the market
 
-const actualName = "Shrek";
+const actualName = "Shrek"; //user name
 
 function writeToGameBox(text, clear = false) {
     const gameBox = document.getElementById("game-box");
     if (!gameBox) return console.error("game-box div not found!");
 
-    // Turn every "\n" into "<br>" so newlines still work
+    //every "\n" turns into "<br>" 
     const html = text.replace(/\n/g, "<br>");
 
     if (clear) {
@@ -34,18 +34,18 @@ function writeToGameBox(text, clear = false) {
     } else {
         gameBox.innerHTML += (gameBox.innerHTML ? "<br>" : "") + html;
     }
-}
+}  //helps with GameBox display
 
 function showImage(imagePath) {
   const imageBox = document.getElementById("image-box");
   const image = document.getElementById("event-image");
 
-  image.src = imagePath;  // Set the path of the image
-  imageBox.style.display = "block";  // Make the image container visible
+  image.src = imagePath;  //set the path of image
+  imageBox.style.display = "block";  //image visiblity
 }
 
   
-// Show intro text once on page load
+//shows intro text once on page load
 window.onload = () => {
   const introText = 
 `==============================================================================================
@@ -72,11 +72,12 @@ writeToGameBox(introText, true);
 
 showImage("images/cage princess.png");
 
+//this is the main function that the game runs through
 function nextStep() {
   const inputBox = document.getElementById("input-box");
   const input = inputBox.value.trim();
   inputBox.value = "";
-    if (step === 100) {
+    if (step === 100) { //these if's determine what events are being played
       handleCombatInput(input);
       return;
     }
@@ -85,7 +86,6 @@ function nextStep() {
       return;
     }
     if (step === 300) {
-      // If we're at the confirmation prompt (merchantStep 3), send to confirmPurchase
       if (merchantStep === 3) {
         confirmPurchase(input);
       } else {
@@ -97,10 +97,10 @@ function nextStep() {
       handleOracleInput(input);
       return;
     }
-    if (step === 299) {  // Handling "approach merchant?"
+    if (step === 299) {  
       if (input.toLowerCase() === "yes") {
-        merchantStep = 0; // Reset merchant flow
-        step = 300; // Enter merchant interaction
+        merchantStep = 0; 
+        step = 300; 
         showMerchantMenu();
       } else {
         writeToGameBox("You leave the Merchant alone.", true);
@@ -108,12 +108,12 @@ function nextStep() {
       }
       return;
     }    
-    if (step === 399) {  // Handling "approach Oracle?"
+    if (step === 399) { 
       if (input.toLowerCase() === "yes") {
         questionQuant    = 0;
         totalFin         = 0;
         CarriedResponses = [];
-        step = 400; // move into Oracle menu
+        step = 400; 
         showOracleMenu();
       } else {
         writeToGameBox("You leave the Oracle untouched.", true);
@@ -130,9 +130,9 @@ function nextStep() {
     case 1:
         const chosenName = input;
         writeToGameBox(`\n\nOops, typo detected! Don't worry, looks like autocorrect changed "${chosenName}" to "Shrek".`, true);
-        writeToGameBox(`\n(Autocorrecting... ah, name found. It's Shrek now.)`);
-        Shrek = new User("Shrek", 250, 10, 0, 250); // Use "Shrek" as player name
-        Shrek.actualName = chosenName; // Store original for future fun
+        writeToGameBox(`\n(Autocorrecting... ah, name found. It's Shrek now.)`); //this is a joke so that they cant actually name their character
+        Shrek = new User("Shrek", 250, 10, 0, 250); 
+        Shrek.actualName = chosenName; //store original for winning players
         writeToGameBox(`\n\nWelcome, ${actualName}! Is this name correct? Input yes or no.`);
         step++;
         break;
@@ -149,19 +149,19 @@ function nextStep() {
     const choice = parseInt(input);
     if (choice === 1) {
         writeToGameBox("\n\nYou chose option 1.\nStarting a new game...");
-        Shrek = new User("Shrek", 250, 10, 0, 250); // Create a new user
-        Stats(); // Update and display stats
+        Shrek = new User("Shrek", 250, 10, 0, 250); //create a new user
+        Stats(); 
         step++;
       } else if (choice === 2) {
         writeToGameBox("\n\nYou chose option 2.\nLoading game...");
-        Shrek = loadGame(); // Load saved game data
+        Shrek = loadGame(); //load saved game data
         if (!Shrek) {
           writeToGameBox("No save file found. Starting a new game...");
           Shrek = new User("Shrek", 250, 10, 0, 250);
         } else {
           writeToGameBox("Save file loaded. Resuming game...");
         }
-        Stats(); // Update and display stats
+        Stats();
         step++;
       } else {
         writeToGameBox("\n\nPlease enter a valid option (1 or 2).");
@@ -170,6 +170,7 @@ function nextStep() {
     case 5:
         Stats();
         showImage("images/happy shrek.png");
+        //MAIN MENU:
         writeToGameBox(
             `\n\n==============================================================================================\n` +
             `You are making progress on your mystical quest to find Nick Cage\n\n` +
@@ -189,49 +190,49 @@ function nextStep() {
             writeToGameBox("\n\nInvalid input!");
             break;
         }
-        
+        //RNG based encounters
         let Encounter = Math.floor(Math.random() * 101);
 
         switch (direction) {
             case 1:
             writeToGameBox("\n\nYou head into the wind...");
             if (Encounter < 25) {
-                writeToGameBox("You suddenly smell capitalism.... [Merchant encounter coming soon]");
-                setupMerchant();
+                writeToGameBox("You suddenly smell capitalism.... ");
+                setupMerchant();//[Merchant encounter coming soon]
                 return;       
             } else if (Encounter < 50) {
-                writeToGameBox("You feel like you're being watched.... [Oracle encounter coming soon]");
-                setupOracle();
+                writeToGameBox("You feel like you're being watched.... ");
+                setupOracle();//[Oracle encounter coming soon]
                 return;       
             } else {
-                writeToGameBox("You see a familiar face in the distance.... [NPC encounter coming soon]", true);
-                handleNPCEncounter();  // Start NPC combat when encountered
-                return;               // ←— exit `nextStep` so step stays 200
+                writeToGameBox("You see a familiar face in the distance.... ", true);
+                handleNPCEncounter();  //[NPC encounter coming soon]
+                return;              
             }
             break;
             case 2:
             writeToGameBox("\n\nYou follow the footprints...");
             if (Encounter < 33) {
                 writeToGameBox("You smell capitalism again... [Merchant]");
-                setupMerchant();
+                setupMerchant();//[Merchant encounter coming soon]
                 return;       
             } else if (Encounter < 66) {
                 writeToGameBox("You feel watched... [Oracle]");
-                setupOracle();
+                setupOracle();//[Oracle encounter coming soon]
                 return;       
             } else {
                 writeToGameBox("You meet someone familiar... [NPC]", true);
-                handleNPCEncounter();  // Start NPC combat when encountered
-                return;               // ←— keep `step = 200`
+                handleNPCEncounter();  //[NPC encounter coming soon]
+                return;              
             }
             break;
             case 3:
             writeToGameBox("\n\nA roar echoes nearby... [Boss encounter coming soon]", true);
             if (npcWins >= 10) {
                 writeToGameBox("A mighty roar shakes the earth...\nThe boss approaches!!");
-                step = 200;       // Tells the game you're now in boss mode
-                bossStep = 0;     // Resets boss interaction step
-                BossB(); // Start the boss battle
+                step = 200;      
+                bossStep = 0;  
+                BossB(); //Start the boss battle
                 return;       
               } else {
                 writeToGameBox(`You feel a strange energy in the air... but you're not ready yet.\n(Win ${10 - npcWins} more battles to unlock the boss!)`);
@@ -246,7 +247,7 @@ function nextStep() {
             return;
         }
         
-        // Only loop back if no combat was triggered
+        //only loop back if no combat was triggered
         step = 5;
         break;
       }
@@ -254,15 +255,15 @@ function nextStep() {
 function loadGame() {
     const savedData = localStorage.getItem("userData");
     if (savedData) {
-      const parsedData = JSON.parse(savedData); // Deserialize back to a plain object
+      const parsedData = JSON.parse(savedData); //deserialize back to a plain object
       npcWins = parsedData.npcWins || 0;
       return new User(parsedData.name, parsedData.health, parsedData.wallet, parsedData.luck, parsedData.energy);
     }
-    return null; // No saved data found
+    return null; // no saved data found
   }
   
   function SaveGame(user) {
-    // Ensure Shrek (or the player object) is saved correctly
+    //player object is saved 
     const userData = {
         name: user.name,
         health: user.health,
@@ -271,21 +272,21 @@ function loadGame() {
         energy: user.energy,
         npcWins: npcWins
     };
-    localStorage.setItem("userData", JSON.stringify(userData));  // Serialize the object
+    localStorage.setItem("userData", JSON.stringify(userData));  //Serialize the object
     console.log("Game saved!");
 }
 
 function Stats() {
-   // Ensures key survival variables stay within a reasonable range
+   //ensures key survival variables stay within a reasonable range
    if (Shrek.energy < 0) Shrek.energy = 0;
    if (Shrek.energy > 1000) Shrek.energy = 1000;
    if (Shrek.health < 0) Shrek.health = 0;
    if (Shrek.health > 1000) Shrek.health = 1000;
 
-   // Get the element where stats should be displayed
+   //stats should be displayed in stats-box
    const statsBox = document.getElementById("stats-box");
 
-   // Set the content inside the stats box
+   //set the content inside the stats box
    statsBox.innerHTML = `
    <div style="text-align: center;">
        <h2>User Stats</h2>
@@ -302,12 +303,12 @@ function Stats() {
 function gameOver(reason = "Your journey ends here.") {
   writeToGameBox(`\n\n================ GAME OVER ================\n${reason}\n===========================================`, true);
   showImage("images/game over.png");
-  step = -1; // Set step to an invalid value to prevent further input
+  step = -1; //set step to an invalid value to prevent further input
   document.getElementById("input-box").disabled = true;
 }
 
 
-//image of Nick Cage displaying?
+//image of Nick Cage displaying
 function Cage() {
     writeToGameBox(`
   ==============================================================================================
@@ -319,13 +320,13 @@ function Cage() {
   }
 
 function BossB() {
-  evilBoss = new Boss(); // initialize the boss
+  evilBoss = new Boss(); //initialize the boss
   bossStep = 0;
-  step = 200; // boss combat mode
+  step = 200; //boss combat mode
   writeRed(`\n\nYou have spotted the Boss... oh ho, ha ha...`);
   writeToGameBox(`\n${evilBoss.name} blocks your path to Nick Cage.\nPrepare for battle!`);
   showImage("images/shreks boss.png");
-  setTimeout(showBossMenu, 300); // slight delay for smoothness
+  setTimeout(showBossMenu, 300); //slight delay for smoothness
 }
 
 function showBossMenu() {
@@ -341,11 +342,11 @@ function showBossMenu() {
 }
 
 function bossInputHandler(input) {
-    // CASE 0: show the menu and advance to waiting for the player's selection
+    //show the menu and advance to waiting for the player's selection
     if (bossStep === 0) {
       Stats();
 
-      // red stats line:
+      //red stats line:
       writeRed(`\nEnemy Stats: ${evilBoss.name} | Health: ${evilBoss.health}\n`);
       writeToGameBox(
         `Choose your attack:\n` +
@@ -366,7 +367,7 @@ function bossInputHandler(input) {
       return;
     }
 
-    // CASE 1: process the player's selection
+    //process the player's selection
     if (bossStep === 1) {
       const choice = parseInt(input);
       if (![1, 2, 3].includes(choice)) {
@@ -374,10 +375,10 @@ function bossInputHandler(input) {
         return; // stay in step 1, waiting for a valid move
       }
   
-      // boss picks its move
+      //boss picks its move
       const bossMove = Math.floor(Math.random() * 3) + 1;
   
-      // Rock–Paper–Scissors logic
+      //Rock–Paper–Scissors logic to land attacks
       if (choice === bossMove) {
         writeToGameBox(`\nDraw! ${evilBoss.name}'s "${evilBoss.pow}" deflects your move.`, true);
         Shrek.energy -= 10;
@@ -397,7 +398,7 @@ function bossInputHandler(input) {
         Shrek.energy -= 10;
       }
   
-      // CHECK FOR END-OF-COMBAT
+      //win
       if (evilBoss.health <= 0) {
         const reward = 10 + (10 * Shrek.luck);
         Shrek.wallet += reward;
@@ -414,7 +415,7 @@ function bossInputHandler(input) {
             `);
             showImage("images/lion.jpg");
         Stats();
-      // cleanly exit combat:
+      //cleanly exit combat
         step = 5;
         bossStep = 0;
         evilBoss = null;
@@ -430,7 +431,7 @@ function bossInputHandler(input) {
         return;
       }
   
-      // STILL FIGHTING → reset to show menu again *immediately*
+      //reset to show menu again 
       bossStep = 0;
       writeToGameBox("\nPreparing for the next round...");
       setTimeout(() => {
@@ -444,10 +445,11 @@ function bossInputHandler(input) {
         `3. Be a swampy boy`
       );
       bossStep = 1;
-    }, 500); // purely visual delay
+    }, 500); 
     }
 }
 
+//npc whacky character creator:
 function createRandomWackyCharacter() {
 const names = [
     "Frodo Baggins", "Gandalf The Gray", "Big Dwarf Man", "Aristotle", "Donkey",
@@ -466,12 +468,12 @@ const attacks = [
 const health = Math.floor(Math.random() * 51) + 50; // 50–100 health
 const index = Math.floor(Math.random() * names.length);
 const name = names[index];
-const pow = attacks[index];
+const pow = attacks[index]; //name of their attacks
 
-return new NPC(name, health, pow); // you may want to allow custom power if needed
+return new NPC(name, health, pow); 
 }
-  
-// Encounter logic for NPC
+
+//sets up npc combat
 function handleNPCEncounter() {
   const npc = createRandomWackyCharacter();
   currentEnemy = npc;
@@ -480,12 +482,12 @@ function handleNPCEncounter() {
   writeRed(`\n\nYou encounter ${npc.name}! Prepare for combat.`);
   writeToGameBox(`\n\n[Combat starts with ${npc.name}]\n\n`);
   showImage("images/fight.png");
-  handleCombatInput(""); // Immediately prompt the attack choices
+  handleCombatInput("");
 }
 
-  
+//for attack logic
 function handleCombatInput(input) {
-  // CASE 0: show the menu and advance to waiting for the player's selection
+  //show the menu and advance to waiting for the player's selection
   if (npcCombatStep === 0) {
     Stats();
 
@@ -512,18 +514,19 @@ function handleCombatInput(input) {
     return;
   }
   
-  // CASE 1: process the player's selection
+  //process the player's selection
   if (npcCombatStep === 1) {
     const choice = parseInt(input);
+
     if (![1, 2, 3].includes(choice)) {
       writeToGameBox("Invalid move. Choose 1, 2, or 3.");
-      return; // stay in step 1, waiting for a valid move
+      return; //stay in step 1, waiting for a valid move
     }
 
-    // NPC picks its move
+    //NPC picks its move
     const npcMove = Math.floor(Math.random() * 3) + 1;
 
-    // Rock–Paper–Scissors logic
+    //Rock–Paper–Scissors logic
     if (choice === npcMove) {
       writeToGameBox(`\nDraw! ${currentEnemy.name}'s ${currentEnemy.pow} deflects your move.`, true);
       Shrek.energy -= 10;
@@ -543,7 +546,7 @@ function handleCombatInput(input) {
       Shrek.energy -= 10;
     }
 
-    // CHECK FOR END-OF-COMBAT
+    //if win
     if (currentEnemy.health <= 0) {
       const reward = 10 + (10 * Shrek.luck);
       Shrek.wallet += reward;
@@ -554,7 +557,7 @@ function handleCombatInput(input) {
         true
       );
       Stats();
-      // cleanly exit combat:
+      //clean exit 
       step = 5;
       npcCombatStep = 0;
       currentEnemy = null;
@@ -568,7 +571,6 @@ function handleCombatInput(input) {
       currentEnemy = null;
       return;
     }
-    // Smooth pacing — not recursive
     npcCombatStep = 0;
     writeToGameBox("\nPreparing for the next round...");
     setTimeout(() => {
@@ -586,95 +588,90 @@ function handleCombatInput(input) {
   }
 }
 
-// cart resetter
+//cart resetter
 function resetCart() {
   products.forEach(p => p.quant = 0);
 }
 
-// Merchant interaction - starting the encounter
+//merchant interaction
 function setupMerchant() {
   writeToGameBox("Welcome to the Merchant's shop! \nDo you want to approach? (yes/no)\n", true);
   showImage("images/merchant.png");
   step = 299;
 }
 
-// Display the shop's menu with product options
+//display the shop's menu with product options
 function showMerchantMenu() {
   Stats();
   let menu = "Choose an item to purchase:\n";
   
-  // Display each product and the quantity player owns
+  //display each product, their effects, and the quantity player has in their cart
   products.forEach((p, i) => {
     menu += `${i + 1}. ${p.name} - $${p.price} | ❤️ ${p.health} | ⚡ ${p.energy} (You own: ${p.quant})\n`;
   });
   
-  // Option to finish shopping and proceed
+  //finish shopping?
   menu += `${products.length + 1}. Finish and Checkout`;
   writeToGameBox(menu);
   merchantStep = 1;
 }
 
 function handleMerchantInput(input) {
-  // Trim input and handle string conversion to integer
-  const choice = parseInt(input.trim(), 10);  // Convert input to integer and remove spaces
+  //string conversion to integer
+  const choice = parseInt(input.trim(), 10);  
 
-  console.log("Input received:", input, "Parsed choice:", choice);  // Debugging
-
-  // Player has chosen an item to purchase
+  // player has chosen an item to purchase
   if (merchantStep === 1) {
-    console.log("Merchant Step 1: Item selection");  // Debugging
     if (!isNaN(choice) && choice >= 1 && choice <= products.length) {
-      // Ask for the quantity to buy
+      //ask for the quantity 
       merchantStep = 2;
-      merchantStepProductIndex = choice - 1; // Save the selected product index (zero-based)
+      merchantStepProductIndex = choice - 1; //save the selected product index 
       writeToGameBox(`How many ${products[merchantStepProductIndex].name} would you like to buy?`, true);
     } else if (choice === products.length + 1) {
-      // Player wants to checkout
+      //checkout
       checkout();
     } else {
       writeToGameBox("Invalid choice. Please select a valid option.", true);
-      showMerchantMenu(); // Re-display the menu
+      showMerchantMenu(); //Re-display the menu
     }
   } 
-  // Player has selected the quantity for the item
+  //after selected the quantity for the item
   else if (merchantStep === 2) {
     const quantity = parseInt(input.trim(), 10);
-    console.log("Merchant Step 2: Quantity selection, Quantity:", quantity);  // Debugging
     if (isNaN(quantity) || quantity <= 0) {
       writeToGameBox("Invalid quantity. Please enter a valid number.");
-      merchantStep = 1; // Go back to product menu for another attempt
+      merchantStep = 1; //go back to product menu
       showMerchantMenu();
       return;
     }
 
-    // Update the quantity of the chosen product
+    //update the quantity 
     products[merchantStepProductIndex].quant += quantity;
     writeToGameBox(`Added ${quantity} x ${products[merchantStepProductIndex].name} to your cart.`, true);
-    merchantStep = 1; // Go back to the item selection menu
+    merchantStep = 1; //go back to the item selection menu
     showMerchantMenu();
   }
 }
 
-// Proceed with the checkout
+//checkout
 function checkout() {
   let total = products.reduce((acc, p) => acc + p.price * p.quant, 0);
   writeToGameBox(`Your total is $${total.toFixed(2)}. You have $${Shrek.wallet}. Confirm purchase? (yes/no)`, true);
-  merchantStep = 3; // Await confirmation
+  merchantStep = 3; 
 }
 
-// Handle confirmation or cancellation of the purchase
+//confirmation or cancellation of the purchase
 function confirmPurchase(input) {
   let total = products.reduce((acc, p) => acc + p.price * p.quant, 0);
 
   if (input.toLowerCase() === "yes") {
     if (Shrek.wallet >= total) {
-      // Deduct the cost
+      //Deduct the cost from poor shrek's wallet
       Shrek.wallet -= total;
 
-      // Apply effects of each purchased item
+      //apply effects of each purchased item:
       products.forEach(p => {
         if (p.quant > 0) {
-          // Apply health & energy effects
           Shrek.health += p.health * p.quant;
           Shrek.energy += p.energy * p.quant;
 
@@ -685,11 +682,8 @@ function confirmPurchase(input) {
           );
         }
       });
-
-      // Now that effects are applied, reset the cart
       resetCart();
-
-      // Refresh the stats display
+      //refresh the stats display
       Stats();
 
       writeToGameBox(`You have $${Shrek.wallet.toFixed(2)} left.`);
@@ -713,7 +707,7 @@ function confirmPurchase(input) {
   }
 }
 
-function setupOracle() {
+function setupOracle() { //ORACLE ENCOUNTER!!!!!
   writeToGameBox("\n🌀 A smoky voice whispers:\n\n”The Oracle stands ready… $3.50 a question.”\nDo you want to approach? (yes/no)\n", true);
   showImage("images/oracle.png");
   step = 399;
@@ -729,13 +723,13 @@ function showOracleMenu() {
 3) 💰  Pay and depart
 
 `);
-  merchantStep = 0;  // re-use merchantStep as “sub-step” inside Oracle
+  merchantStep = 0;  //re-use merchantStep inside Oracle
 }
 
 function handleOracleInput(input) {
   const choice = parseInt(input, 10);
 
-  // SUB-STEP 0: main menu
+  //main menu
   if (merchantStep === 0) {
     if (choice === 1) {
       merchantStep = 1;
@@ -747,7 +741,7 @@ function handleOracleInput(input) {
       writeToGameBox("Your past questions & answers:", true);
       CarriedResponses.forEach(r => {
         if (typeof r === "string") {
-          writeToGameBox(r); // Just display the old-style string
+          writeToGameBox(r); //cool display
         } else if (typeof r === "object" && r !== null) {
           writeToGameBox(`🗨️ Q: ${r.question}`);
           writeToGameBox(`✨ A: ${r.answer}`);
@@ -766,14 +760,13 @@ function handleOracleInput(input) {
     return;
   }
 
-  // SUB-STEP 1: we’ve asked “What is your question?”
   if (merchantStep === 1) {
     const question = input;
     CarriedResponses.push("Q: " + question);
 
-    // generate the Oracle’s answer
+    //generate the Oracle’s answer
 
-// 1) Define one array of cohesive “prefix + suffix” pairs:
+//Define one array of correlating “prefix + suffix” pairs:
 const oracleResponses = [
   { prefix: "Nicholas Cage thinks you’re", suffix: "a pretty chill soul.", isGood: true },
   { prefix: "Nicholas Cage thinks you’re", suffix: "too good for Mr. Cage.", isGood: true },
@@ -788,13 +781,13 @@ const oracleResponses = [
   { prefix: "Some say that", suffix: "mysterious encounters await.", isGood: true },
 ];
 
-// 2) Pick one at random:
+//pick one at random
 const choiceObj = oracleResponses[
   Math.floor(Math.random() * oracleResponses.length)
 ];
 const answer = `${choiceObj.prefix} ${choiceObj.suffix}`;
 
-CarriedResponses.push({ question: question, answer: answer, isGood: choiceObj.isGood }); // full object
+CarriedResponses.push({ question: question, answer: answer, isGood: choiceObj.isGood }); 
 writeToGameBox(`
 
   ✨  ${answer}
@@ -806,12 +799,12 @@ showOracleMenu();
 
 }
 
-  // SUB-STEP 2: confirmation of payment
+  //confirmation of payment
   if (merchantStep === 2) {
     if (input.toLowerCase() === "yes") {
       if (Shrek.wallet >= totalFin) {
         Shrek.wallet -= totalFin;
-        // Count only good fortunes
+        //apply only good fortunes
         const goodFortunes = CarriedResponses.filter(r => r.isGood).length;
         writeToGameBox(`Paid $${totalFin.toFixed(2)}. Luck +${goodFortunes * 0.2}.`, true);
         Shrek.luck += goodFortunes * 0.2;
@@ -824,14 +817,14 @@ showOracleMenu();
       Shrek.luck -= questionQuant * 0.05;
     }    
     Stats();
-    step = 5;  // back to main game
+    step = 5;  //back to main menu
     return;
   }
 }
 
 function writeRed(text) {
   const gameBox = document.getElementById("game-box");
-  // wrap in a div so it’s on its own line
+  //wrap in a div so it’s on its own line
   gameBox.innerHTML += `<div style="color:rgb(217, 84, 110)">${text}</div>`;
 }
 
@@ -839,7 +832,7 @@ document.addEventListener("keydown", function(event) {
 const key = event.key;
 console.log("Key pressed:", key);
 
-// For steps 4–6 (main menu) and combat (100/200), still allow single-key shortcuts:
+//for steps 4–6 (main menu) and combat (100/200), still allow single-key shortcuts
 if ([4, 5, 6].includes(step)) {
   if (["1","2","3","4","5"].includes(key)) {
     event.preventDefault();
@@ -857,8 +850,7 @@ if (step === 100 || step === 200) {
   }
 }
 
-// **Merchant (step 300)**: let the user type any number of digits,
-// then only on Enter do we submit.
+//only submit on Enter
 if (step === 300 || step === 299) {
   if (key === "Enter") {
     event.preventDefault();
@@ -866,7 +858,7 @@ if (step === 300 || step === 299) {
   }
 }
 
-// Oracle (step 400): only submit on Enter too
+//only submit on Enter
 if (step === 400 ||  step === 399) {
   if (key === "Enter") {
     event.preventDefault();

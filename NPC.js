@@ -1,4 +1,4 @@
-// Define the NPC class
+//used for whacky characters
 class NPC {
   constructor(name, health, pow) {
       this.name = name;

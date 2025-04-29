@@ -1,4 +1,3 @@
-// Define the Boss class
 class Boss {
     constructor() {
       this.name = "Shrek's Insecurities";
