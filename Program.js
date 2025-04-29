@@ -1,6 +1,6 @@
 let step = 0;
 let Shrek;
-let npcWins = 10;
+let npcWins = 0;
 let npcCombatStep = 0;
 let currentEnemy;
 let bossStep = 0;
@@ -97,15 +97,39 @@ function nextStep() {
       handleOracleInput(input);
       return;
     }
+    if (step === 299) {  // Handling "approach merchant?"
+      if (input.toLowerCase() === "yes") {
+        merchantStep = 0; // Reset merchant flow
+        step = 300; // Enter merchant interaction
+        showMerchantMenu();
+      } else {
+        writeToGameBox("You leave the Merchant alone.", true);
+        step = 5;  
+      }
+      return;
+    }    
+    if (step === 399) {  // Handling "approach Oracle?"
+      if (input.toLowerCase() === "yes") {
+        questionQuant    = 0;
+        totalFin         = 0;
+        CarriedResponses = [];
+        step = 400; // move into Oracle menu
+        showOracleMenu();
+      } else {
+        writeToGameBox("You leave the Oracle untouched.", true);
+        step = 5; 
+      }
+      return;
+    }
 
   switch (step) {
     case 0:
-      writeToGameBox("\n\nBut first things first… what’s your name, traveler?");
+      writeToGameBox("\n\nBut first things first… what’s your name, traveler?", true);
       step++;
       break;
     case 1:
         const chosenName = input;
-        writeToGameBox(`\n\nOops, typo detected! Don't worry, looks like autocorrect changed "${chosenName}" to "Shrek".`);
+        writeToGameBox(`\n\nOops, typo detected! Don't worry, looks like autocorrect changed "${chosenName}" to "Shrek".`, true);
         writeToGameBox(`\n(Autocorrecting... ah, name found. It's Shrek now.)`);
         Shrek = new User("Shrek", 250, 10, 0, 250); // Use "Shrek" as player name
         Shrek.actualName = chosenName; // Store original for future fun
@@ -113,8 +137,7 @@ function nextStep() {
         step++;
         break;
     case 2:
-        writeToGameBox(`\n\nAlright Shrek, glad we're on the same page. Press Enter to continue!`);
-        showImage("images/happy shrek.png");
+        writeToGameBox(`\n\nAlright Shrek, glad we're on the same page. Press Enter to continue!`, true);
         step++;
         break;
     case 3:
@@ -146,6 +169,7 @@ function nextStep() {
       break;
     case 5:
         Stats();
+        showImage("images/happy shrek.png");
         writeToGameBox(
             `\n\n==============================================================================================\n` +
             `You are making progress on your mystical quest to find Nick Cage\n\n` +
@@ -153,9 +177,9 @@ function nextStep() {
             `==============================================================================================\n\n` +
             `1. Frolic into the direction of the wind\n` +
             `2. Follow some odd footprints\n` +
-            `3. Tie a blindfold around your face and say Nicholas Cage 5 times! (the boss could approach, beware...)\n` +
+            `3. Close your eyes and say Nicholas Cage 5 times!\n` +
             `4. Gaze into the stars\n` +
-            `5. Abandon Quest\n\n`
+            `5. Abandon Quest\n\n`, true
         );
         step = 6;
         break;    
@@ -180,7 +204,7 @@ function nextStep() {
                 setupOracle();
                 return;       
             } else {
-                writeToGameBox("You see a familiar face in the distance.... [NPC encounter coming soon]");
+                writeToGameBox("You see a familiar face in the distance.... [NPC encounter coming soon]", true);
                 handleNPCEncounter();  // Start NPC combat when encountered
                 return;               // ←— exit `nextStep` so step stays 200
             }
@@ -196,13 +220,13 @@ function nextStep() {
                 setupOracle();
                 return;       
             } else {
-                writeToGameBox("You meet someone familiar... [NPC]");
+                writeToGameBox("You meet someone familiar... [NPC]", true);
                 handleNPCEncounter();  // Start NPC combat when encountered
                 return;               // ←— keep `step = 200`
             }
             break;
             case 3:
-            writeToGameBox("\n\nA roar echoes nearby... [Boss encounter coming soon]");
+            writeToGameBox("\n\nA roar echoes nearby... [Boss encounter coming soon]", true);
             if (npcWins >= 10) {
                 writeToGameBox("A mighty roar shakes the earth...\nThe boss approaches!!");
                 step = 200;       // Tells the game you're now in boss mode
@@ -231,6 +255,7 @@ function loadGame() {
     const savedData = localStorage.getItem("userData");
     if (savedData) {
       const parsedData = JSON.parse(savedData); // Deserialize back to a plain object
+      npcWins = parsedData.npcWins || 0;
       return new User(parsedData.name, parsedData.health, parsedData.wallet, parsedData.luck, parsedData.energy);
     }
     return null; // No saved data found
@@ -244,6 +269,7 @@ function loadGame() {
         wallet: user.wallet,
         luck: user.luck,
         energy: user.energy,
+        npcWins: npcWins
     };
     localStorage.setItem("userData", JSON.stringify(userData));  // Serialize the object
     console.log("Game saved!");
@@ -268,6 +294,7 @@ function Stats() {
        <p><strong>Money:</strong> $${Shrek.wallet}</p>
        <p><strong>Luck:</strong> ${Shrek.luck}</p>
        <p><strong>Energy:</strong> ${Shrek.energy}</p>
+       <p><strong>NPC Wins:</strong> ${npcWins}</p>
    </div>
    `;
  }
@@ -378,14 +405,14 @@ function bossInputHandler(input) {
           writeToGameBox(`
             ==============================================================================================
             You have defeated ${evilBoss.name}! 🏆
-            You approach the mystery man... "Nick Cage?" you ask.
+            You approach the mystery man... "Nick Cage?" you ask.\n
             Suddenly, Mufasa's voice booms from the heavens: 
-            "There is no Nick Cage, Shrek. There never was."
-            Nick Cage was the friends we made along the way 💫.
+            "There is no Nick Cage, Shrek. There never was."\n
+            Nick Cage was the friends we made along the way 💫.\n\n
             CONGRATS ${Shrek.actualName}!!! You beat the game. HA, I did know your name all along Shrek. 
             ==============================================================================================
             `);
-            showImage("images/happy shrek.png");
+            showImage("images/lion.jpg");
         Stats();
       // cleanly exit combat:
         step = 5;
@@ -566,11 +593,9 @@ function resetCart() {
 
 // Merchant interaction - starting the encounter
 function setupMerchant() {
-  writeToGameBox("Welcome to the Merchant's shop! ------- ", true);
+  writeToGameBox("Welcome to the Merchant's shop! \nDo you want to approach? (yes/no)\n", true);
   showImage("images/merchant.png");
-  merchantStep = 0; // Reset merchant flow
-  step = 300; // Enter merchant interaction
-  showMerchantMenu();
+  step = 299;
 }
 
 // Display the shop's menu with product options
@@ -602,12 +627,12 @@ function handleMerchantInput(input) {
       // Ask for the quantity to buy
       merchantStep = 2;
       merchantStepProductIndex = choice - 1; // Save the selected product index (zero-based)
-      writeToGameBox(`How many ${products[merchantStepProductIndex].name} would you like to buy?`);
+      writeToGameBox(`How many ${products[merchantStepProductIndex].name} would you like to buy?`, true);
     } else if (choice === products.length + 1) {
       // Player wants to checkout
       checkout();
     } else {
-      writeToGameBox("Invalid choice. Please select a valid option.");
+      writeToGameBox("Invalid choice. Please select a valid option.", true);
       showMerchantMenu(); // Re-display the menu
     }
   } 
@@ -624,7 +649,7 @@ function handleMerchantInput(input) {
 
     // Update the quantity of the chosen product
     products[merchantStepProductIndex].quant += quantity;
-    writeToGameBox(`Added ${quantity} x ${products[merchantStepProductIndex].name} to your cart.`);
+    writeToGameBox(`Added ${quantity} x ${products[merchantStepProductIndex].name} to your cart.`, true);
     merchantStep = 1; // Go back to the item selection menu
     showMerchantMenu();
   }
@@ -633,7 +658,7 @@ function handleMerchantInput(input) {
 // Proceed with the checkout
 function checkout() {
   let total = products.reduce((acc, p) => acc + p.price * p.quant, 0);
-  writeToGameBox(`Your total is $${total.toFixed(2)}. You have $${Shrek.wallet}. Confirm purchase? (yes/no)`);
+  writeToGameBox(`Your total is $${total.toFixed(2)}. You have $${Shrek.wallet}. Confirm purchase? (yes/no)`, true);
   merchantStep = 3; // Await confirmation
 }
 
@@ -671,31 +696,27 @@ function confirmPurchase(input) {
       merchantStep = 0;
       step = 5;
     } else {
-      writeToGameBox("You don't have enough money! The Merchant kicks you out.");
+      writeToGameBox("You don't have enough money! The Merchant kicks you out.", true);
       resetCart();
       merchantStep = 0;
       step = 5;
     }
   } 
   else if (input.toLowerCase() === "no") {
-    writeToGameBox("You decided not to buy anything. The Merchant waves goodbye.");
+    writeToGameBox("You decided not to buy anything. The Merchant waves goodbye.", true);
     resetCart();
     merchantStep = 0;
     step = 5;
   } 
   else {
-    writeToGameBox("Invalid input. Please type 'yes' or 'no'.");
+    writeToGameBox("Invalid input. Please type 'yes' or 'no'.", true);
   }
 }
 
 function setupOracle() {
-  writeToGameBox("\n🌀 A smoky voice whispers:\n\n”The Oracle stands ready… $3.50 a question.”\n", true);
+  writeToGameBox("\n🌀 A smoky voice whispers:\n\n”The Oracle stands ready… $3.50 a question.”\nDo you want to approach? (yes/no)\n", true);
   showImage("images/oracle.png");
-  questionQuant    = 0;
-  totalFin         = 0;
-  CarriedResponses = [];
-  step = 400;
-  showOracleMenu();
+  step = 399;
 }
 
 function showOracleMenu() {
@@ -720,19 +741,26 @@ function handleOracleInput(input) {
       merchantStep = 1;
       totalFin += 3.50;
       questionQuant++;
-      writeToGameBox("What is your question?");
+      writeToGameBox("What is your question?", true);
     }
     else if (choice === 2) {
-      writeToGameBox("Your past questions & answers:");
-      CarriedResponses.forEach(r => writeToGameBox("  " + r));
+      writeToGameBox("Your past questions & answers:", true);
+      CarriedResponses.forEach(r => {
+        if (typeof r === "string") {
+          writeToGameBox(r); // Just display the old-style string
+        } else if (typeof r === "object" && r !== null) {
+          writeToGameBox(`🗨️ Q: ${r.question}`);
+          writeToGameBox(`✨ A: ${r.answer}`);
+        }
+      });
       showOracleMenu();
     }
     else if (choice === 3) {
       merchantStep = 2;
-      writeToGameBox(`You owe $${totalFin.toFixed(2)}. Pay now? (yes/no)`);
+      writeToGameBox(`You owe $${totalFin.toFixed(2)}. Pay now? (yes/no)`, true);
     }
     else {
-      writeToGameBox("Invalid—choose 1, 2, or 3.");
+      writeToGameBox("Invalid—choose 1, 2, or 3.", true);
       showOracleMenu();
     }
     return;
@@ -747,29 +775,26 @@ function handleOracleInput(input) {
 
 // 1) Define one array of cohesive “prefix + suffix” pairs:
 const oracleResponses = [
-  { prefix: "Nicholas Cage thinks you’re",          suffix: "a pretty chill soul." },
-  { prefix: "Nicholas Cage thinks you’re",          suffix: "too good for Mr. Cage." },
-  { prefix: "Nicholas Cage thinks you’re",          suffix: "destined for glory." },
+  { prefix: "Nicholas Cage thinks you’re", suffix: "a pretty chill soul.", isGood: true },
+  { prefix: "Nicholas Cage thinks you’re", suffix: "too good for Mr. Cage.", isGood: true },
+  { prefix: "Nicholas Cage thinks you’re", suffix: "destined for glory.", isGood: true },
 
-  { prefix: "Beware, for",                           suffix: "you’re a sad, pathetic bug." },
-  { prefix: "I regret to inform you that",           suffix: "your luck has run dry." },
-  { prefix: "The fates whisper that",                suffix: "the swamp itself rejects you." },
+  { prefix: "Beware, for", suffix: "you’re a sad, pathetic bug.", isGood: false },
+  { prefix: "I regret to inform you that", suffix: "your luck has run dry.", isGood: false },
+  { prefix: "The fates whisper that", suffix: "the swamp itself rejects you.", isGood: false },
 
-  { prefix: "Curiously,",                            suffix: "you might enjoy a bagel." },
-  { prefix: "For what it’s worth,",                  suffix: "you could use a strong coffee." },
-  { prefix: "Some say that",                         suffix: "mysterious encounters await." },
+  { prefix: "Curiously,", suffix: "you might enjoy a bagel.", isGood: true },
+  { prefix: "For what it’s worth,", suffix: "you could use a strong coffee.", isGood: true },
+  { prefix: "Some say that", suffix: "mysterious encounters await.", isGood: true },
 ];
 
 // 2) Pick one at random:
-const choice = oracleResponses[
+const choiceObj = oracleResponses[
   Math.floor(Math.random() * oracleResponses.length)
 ];
+const answer = `${choiceObj.prefix} ${choiceObj.suffix}`;
 
-// 3) Build your answer from that single pair:
-const answer = `${choice.prefix} ${choice.suffix}`;
-
-// 4) Record & display it
-CarriedResponses.push("A: " + answer);
+CarriedResponses.push({ question: question, answer: answer, isGood: choiceObj.isGood }); // full object
 writeToGameBox(`
 
   ✨  ${answer}
@@ -783,19 +808,21 @@ showOracleMenu();
 
   // SUB-STEP 2: confirmation of payment
   if (merchantStep === 2) {
-    if (input.toLowerCase()==="yes") {
+    if (input.toLowerCase() === "yes") {
       if (Shrek.wallet >= totalFin) {
         Shrek.wallet -= totalFin;
-        writeToGameBox(`Paid $${totalFin.toFixed(2)}. Luck +${questionQuant*0.1}.`);
-        Shrek.luck += questionQuant * 0.1;
+        // Count only good fortunes
+        const goodFortunes = CarriedResponses.filter(r => r.isGood).length;
+        writeToGameBox(`Paid $${totalFin.toFixed(2)}. Luck +${goodFortunes * 0.2}.`, true);
+        Shrek.luck += goodFortunes * 0.2;
       } else {
-        writeToGameBox("Not enough money—Oracle is displeased. Luck -0.05 per question.");
+        writeToGameBox("Not enough money—Oracle is displeased. Luck -0.05 per question.", true);
         Shrek.luck -= questionQuant * 0.05;
       }
     } else {
-      writeToGameBox("You leave without paying. Luck -0.05 per question.");
+      writeToGameBox("You leave without paying. Luck -0.05 per question.", true);
       Shrek.luck -= questionQuant * 0.05;
-    }
+    }    
     Stats();
     step = 5;  // back to main game
     return;
@@ -832,7 +859,7 @@ if (step === 100 || step === 200) {
 
 // **Merchant (step 300)**: let the user type any number of digits,
 // then only on Enter do we submit.
-if (step === 300) {
+if (step === 300 || step === 299) {
   if (key === "Enter") {
     event.preventDefault();
     nextStep();
@@ -840,7 +867,7 @@ if (step === 300) {
 }
 
 // Oracle (step 400): only submit on Enter too
-if (step === 400) {
+if (step === 400 ||  step === 399) {
   if (key === "Enter") {
     event.preventDefault();
     nextStep();
